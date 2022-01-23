@@ -1,0 +1,5 @@
+typing
+python-time
+pyyaml
+mysql.connector
+python-dotenv

@@ -1,0 +1,51 @@
+{
+  "permissions": {
+    "dev": [
+      875098573262438426  # Dev
+    ],  
+    "administrative": [
+      875098573262438426, # Dev
+      875098573262438424, # Directeur
+      875098573262438425, # Job manager
+      918434947247788063, # Supervisor
+      931948866192949288  # 🔑
+    ],
+    "basic": [
+      862078083586457630, # Dev
+      875098573262438424, # Directeur
+      875098573262438425, # Job manager
+      918434947247788063, # Supervisor
+      931948866192949288, # 🔑
+      875098573262438423, # Manager
+      875098573262438422  # Agent
+    ],
+    "all_roles": {
+      "everyone": 875098573262438420,       # Everyone
+      "muted": 932108517454778408,          # Muted
+      "klant": 918435180778258464,          # Klant
+      "agent": 875098573262438422,          # Agent
+      "manager": 875098573262438423,        # Manager
+      "key": 931948866192949288,            #🔑
+      "supervisor": 918434947247788063,     # Supervisor
+      "job manager": 875098573262438425,    # Job manager
+      "directeur": 875098573262438424,      # Directeur
+      "dev": 862078083586457630,            # Dev
+      "sofia sarafian": 918437575755182141  # Bot role
+    },
+    "log_channels": {
+      "dev": 932143354538491924,
+      "administrative": 932143290621505596,
+      "basic": 932143333696999486,
+      "tickets": 932315657289236570
+    }
+  },
+  "categories": [
+    931950199151136819, # Directeur Category
+    918437860695220224, # Lvl 3 Category
+    918437826494861362, # Lvl 2 Category
+    918437790025392138  # Lvl 1 Category
+  ],
+  "buttons": [
+    934686109441622067  # Message met knoppen
+  ]
+}

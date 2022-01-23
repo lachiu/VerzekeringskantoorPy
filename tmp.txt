@@ -1,0 +1,101 @@
+dict_ = {
+    "url": 1,
+    "title": "",
+    "description": "",
+    "author": "",
+    "content": "",
+    "items": {}
+}
+
+
+dict_ = {
+    "url" : 1,
+    "show" : 0,
+    "merk" : brand_value,
+    "gmerk" : gbrand_value,
+    "model" : model_value,
+    "beschrijving" : description_value,
+    "limited" : limited_value,
+    "uitverkocht" : sold_value,
+    "trailer" : trailer_value,
+    "nieuw" : new_value,
+    "kofferbakruimte" : trunk_value,
+    "acceleratie, 0-100km/h" : acceleration_value,
+    "topsnelheid" : topspeed_value,
+    "datum" : date_value,
+    "prijs" : price_value
+}
+
+
+                    if key == "beschrijvingaaac": # Werkt zolang de tekens niet meer dan 2048 zijn
+                        sentences = value.split('.')
+                        if len(value) > 1024:
+                            string = sentences[0]
+                            sentences.pop(0)
+                            while len(string) < 1024:
+                                string = string + sentences[0]
+                                sentences.pop(0)
+                            else:
+                                string2 = sentences[0]
+                                sentences.pop(0)
+                                while len(string2) < 1024:
+                                    string2 = string2 + sentences[0]
+                                    sentences.pop(0)
+                        else:
+                            embed.add_field(name=name_value, value=value, inline=False)
+
+
+                    if key == "beschrijvingaaab": # character based
+                        # Checken of het 1024 tekens is.
+                        qty_chars = len(value)
+                        math.ceil(qty_chars / 1024)
+                        #string = "ikneukjouinjekontje"
+                        string_list = []
+                        for character in value:
+                            string_list.append(character)
+
+                        string_points = []
+                        i = len(string_list) - 1
+                        while not i == 0:
+                            if string_list[i] == '.':
+                                string_points.append(i)
+                                await ctx.send(i)
+                            i = i - 1
+                        
+                        await ctx.send(string_points)
+
+                        while string_points[0] + 1 > 1024:
+                            string_points.pop(0)
+
+                        await ctx.send(string_points)
+
+                        #for character in string[ : :-1]:
+                        #    await ctx.send(character)
+                    
+                    if key == "beschrijvingaaa": # copied
+                        num_of_fields = len(value)//1024 + 1
+                        for i in range(num_of_fields):
+                            embed.add_field(name=name_value if i == 0 else "\u200b", value=value[i*1024:i+1*1024], inline=False)
+
+                    else:
+                        embed.add_field(name=name_value, value=value, inline=False)
+
+
+                        elif key == "beschrijvingaaa":
+                    if len(value) > 1024:
+                        sentences = value.split('.')
+                        i = 1
+                        while i <= math.ceil(len(value) / 1024):
+                            string = sentences[0] + ". "
+                            sentences.pop(0)
+                            while len(string) < 1024:
+                                if not sentences[0] == "":
+                                    string = string + sentences[0] + ". "
+                                    sentences.pop(0)
+                                    
+                            if i == 1: 
+                                
+                            else:
+                                
+
+                            i += 1
