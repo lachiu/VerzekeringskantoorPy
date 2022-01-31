@@ -26,18 +26,19 @@ class tickets(commands.Cog):
 
     @commands.command(aliases=['aanmaken', 'maakaan'])
     async def create(self, ctx):
-        load_dotenv()
-        mydb = mysql.connector.connect(
-            host=os.getenv('DB_SERVERNAME'),
-            user=os.getenv('DB_USERNAME'),
-            password=os.getenv('DB_PASSWORD'),
-            database=os.getenv('DB_NAME')
-        )
+        if general.check_perms('dev', ctx):
+            load_dotenv()
+            mydb = mysql.connector.connect(
+                host=os.getenv('DB_SERVERNAME'),
+                user=os.getenv('DB_USERNAME'),
+                password=os.getenv('DB_PASSWORD'),
+                database=os.getenv('DB_NAME')
+            )
 
-        sql = "SELECT count(*) FROM `tbl_tickets` WHERE `client_discordid` LIKE %s;"
-        mycursor = mydb.cursor()
-        mycursor.execute(sql, (ctx.author.id))
-        myresult = mycursor.fetchone()
+            sql = "SELECT count(*) FROM `tbl_tickets` WHERE `client_discordid` LIKE %s;"
+            mycursor = mydb.cursor()
+            mycursor.execute(sql, (ctx.author.id,))
+            myresult = mycursor.fetchone()
 
     @commands.command(aliases=['lift'])
     async def elevate(self, ctx):
@@ -49,11 +50,10 @@ class tickets(commands.Cog):
             try:
                 next_category_id = general.get_next_category(current_category)
             except ValueError:
-                await ctx.send(f'{ctx.author.mention}, dat is niet mogelijk in dit kanaal.')
+                await ctx.send(f'{ctx.author.mention}, dat is niet mogelijk in dit kanaal.', delete_after=10)
                 return
             else:
-                next_category = discord.utils.get(ctx.guild.categories, id=next_category_id)
-            
+                next_category = ctx.guild.get_channel(next_category_id)            
                 await current_channel.edit(category = next_category)                
 
     @commands.command(aliases=['zekervanmij'])
@@ -61,9 +61,7 @@ class tickets(commands.Cog):
         if general.check_perms('administrative', ctx):
             if general.isTicket(ctx.channel.category_id):
                 if member == None:
-                    await ctx.send(f"{ctx.author.mention}, u moet deze command juist gebruiken.\
-                        \n!forceclaim klant (optioneel: collega)")
-                    self.stop()
+                    member = ctx
 
                 load_dotenv()
                 
@@ -140,7 +138,7 @@ class tickets(commands.Cog):
                     dict_ = {
                         "url": "",
                         "title": "Probleempje!",
-                        "description": f"{ctx.bot.boss.mention}, kan u dit verhelpen zodat \
+                        "description": f"{self.bot.boss.mention}, kan u dit verhelpen zodat \
                             de collega's verder kunnen met het helpen van de klant? \
                             \n \
                             \n[Klik hier om naar die ticket te gaan.](https://discord.com/channels/875098573262438420/{ctx.channel.id})",
@@ -158,9 +156,7 @@ class tickets(commands.Cog):
         if general.check_perms('basic', ctx):
             if general.isTicket(ctx.channel.category_id):
                 if member == None:
-                    await ctx.send(f"{ctx.author.mention}, u moet deze command juist gebruiken.\
-                        \n!forceclaim klant (optioneel: collega)")
-                    self.stop()
+                    member = ctx
 
                 load_dotenv()
                 mydb = mysql.connector.connect(
@@ -243,7 +239,7 @@ class tickets(commands.Cog):
                     dict_ = {
                         "url": "",
                         "title": "Probleempje!",
-                        "description": f"{ctx.bot.boss.mention}, kan u dit verhelpen zodat \
+                        "description": f"{self.bot.boss.mention}, kan u dit verhelpen zodat \
                             de collega's verder kunnen met het helpen van de klant? \
                             \n \
                             \n[Klik hier om naar die ticket te gaan.](https://discord.com/channels/875098573262438420/{ctx.channel.id})",
@@ -256,7 +252,7 @@ class tickets(commands.Cog):
         else:
             await ctx.send(f"{ctx.author.mention}, u heeft niet voldoende permissies om dat te doen.")
 
-    @commands.command(aliases=['afhandelen', 'afgehandeld'])
+    @commands.command(aliases=['afhandelen', 'afgehandeld', 'close'])
     async def done(self, ctx):
         if general.check_perms('basic', ctx) and general.isTicket(ctx.channel.category_id):
             load_dotenv()
@@ -282,14 +278,14 @@ class tickets(commands.Cog):
 
             bot_speaks(self.bot, f'{ctx.author.name} heeft {ctx.channel.name} gemoved naar afgehandeld.')
             sql = "SELECT `client_discordid` FROM `tbl_tickets` WHERE `channelid` LIKE %s;"
-            mycursor = mydb.cursor()
-            mycursor.execute(sql, (ctx.channel.id))
+            mycursor = mydb.cursor(buffered=True)
+            mycursor.execute(sql, (ctx.channel.id,))            
             myresult = mycursor.fetchone()
-            client = discord.utils.get(ctx.guild.members, id=myresult[0])
+            client = discord.utils.get(ctx.guild.members, id=int(myresult[0]))
 
             log_dict = {
                 "mod": ctx.author.id,
-                "user": client.mention,
+                "user": client.id,
                 "reason": "afgehandeld",
                 "unixtime": int(time.time()),
                 "perms": "tickets",
@@ -353,7 +349,7 @@ class tickets(commands.Cog):
                     dict_ = {
                         "url": "",
                         "title": "Probleempje!",
-                        "description": f"{ctx.bot.boss.mention}, kan u dit verhelpen zodat \
+                        "description": f"{self.bot.boss.mention}, kan u dit verhelpen zodat \
                             de collega's verder kunnen met het helpen van de klant? \
                             \n \
                             \nTicket werd niet gevonden in tbl_tickets. \
@@ -445,8 +441,8 @@ class tickets(commands.Cog):
                         sql = "SELECT `agent_discordid`, `client_discordid` FROM `tbl_tickets` WHERE `channelid` LIKE %s;"
                         mycursor.execute(sql, (ctx.channel.id,))
                         myresult = mycursor.fetchone()
-                        agentdiscordid = myresult[0]
-                        clientdiscordid = myresult[1]
+                        agentdiscordid = int(myresult[0])
+                        clientdiscordid = int(myresult[1])
                         huidige_tijd = int(time.time())
 
                         sql = "SELECT `id` FROM `tbl_agents` WHERE `discordID` LIKE %s;"
@@ -476,7 +472,7 @@ class tickets(commands.Cog):
                         try:
                             mycursor.execute(sql, (clientdiscordid,))
                             myresult = mycursor.fetchone()
-                            clientid = myresult[0]
+                            clientid = int(myresult[0])
                         except:
                             dict_ = {
                                 "url": "",

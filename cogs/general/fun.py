@@ -1,5 +1,6 @@
 import os
 import discord
+import datetime
 import mysql.connector
 from typing import List
 from dotenv.main import load_dotenv
@@ -10,9 +11,9 @@ class fun(commands.Cog):
         self.bot = bot
 
     @commands.command(aliases=[])
-    async def tic(self, ctx):
-        message = await ctx.send("Hey damens")
-        await message.add_reaction("1️⃣")
+    async def tic(self, ctx, input: str):
+        input = datetime.datetime.strptime(input, '%Y-%m-%d').date()
+        await ctx.send(f"{input} is {isinstance(input, datetime.date)}")
         
 def setup(bot):
     bot.add_cog(fun(bot))

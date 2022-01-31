@@ -157,27 +157,196 @@ class ChannelButton(discord.ui.View):
     async def claim(self, button: discord.ui.Button, interaction: discord.Interaction):
         await self.button_action(button, interaction, "claim")
 
-
-class PersistentChannelButton(commands.Bot):
-    def __init__(self):
-        super().__init__()
-        self.persistent_views_added = False
-
-    async def on_ready(self):
-        if not self.persistent_views_added:
-            self.add_view(ChannelButton())
-            self.bot.persistent_views_added = True
-
 class administration(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    @commands.Cog.listener()
+    async def on_raw_reaction_add(self, payload):
+        rolegivermessageid = int(general.open_yaml("rolegiver"))
+        if rolegivermessageid == payload.message_id and not payload.user_id == self.bot.user.id:
+            if str(payload.emoji) == '👌':
+                message = await self.bot.ruleschannel.fetch_message(payload.message_id)
+                vkgGuild = self.bot.get_guild(875098573262438420)
+                role = vkgGuild.get_role(general.return_role_id("klant"))
+                await payload.member.add_roles(role)
+
+            await message.clear_reactions()
+            await message.add_reaction('👌')
+
+    @commands.command()
+    async def setuprules(self, ctx):
+        if general.check_perms('dev', ctx):
+            vkgGuild = self.bot.get_guild(875098573262438420)
+            await self.bot.ruleschannel.purge(limit=10, bulk=False)
+            jobmanagers = discord.utils.get(vkgGuild.roles, id=general.return_role_id("job manager"))
+            dict_ = {
+                "url": "",
+                "title": "Algemeen | Lid 1",
+                "description": f"Hieronder vind u de regels die ten alle tijden gelden in deze Discord server.\
+                    \nDeze server word uitsluitend beheerd door {self.bot.boss.mention}.\
+                    \nDe {jobmanagers.mention} zijn ook aanwezig waar u, indien nodig ook naartoe kan.\
+                    \n\
+                    \nNa het behandeld hebben van uw ticket \
+                    ([die vind u hier overigens terug](https://discord.com/channels/875098573262438420/918435738662629386)) \
+                    vragen wij u om deel te nemen aan een review.\
+                    \nDeze word, na beoordeling op spelling en grof taalgebruik, toegevoegd en getoond op onze site.",
+                "author": "",
+                "items": {}
+            }
+                
+            embed = await return_embed(dict_)
+            await self.bot.ruleschannel.send(embed=embed)
+
+            dict_ = {
+                "url": "",
+                "title": "Algemeen | Lid 2",
+                "description": f"{self.bot.user.mention} is onze secretaresse. Deze, en overigens onze andere \
+                    medewerkers ook, dient u altijd met respect te benaderen.\
+                    \nGebeurd dat niet? Dan kunnen wij sancties opleggen:\
+                    \n- Waarschuwing\
+                    \n- Mute\
+                    \n- Kick\
+                    \n- Ban\
+                    \n- Sancties vanuit de gemeente\
+                    \n- Blacklist\
+                    \n\
+                    \nIk hoop dat ik dat maar 1 keer hoef te herhalen.\
+                    \nAls we ons allen aan deze regels kunnen houden komt het goed.",
+                "author": "",
+                "items": {}
+            }
+                
+            embed = await return_embed(dict_)
+            await self.bot.ruleschannel.send(embed=embed)
+
+            dict_ = {
+                "url": "",
+                "title": "Regel 1",
+                "description": f"Het is niet toegestaan om medewerkers te gaan PM'en of \
+                    een vriendschapsverzoek te sturen of te bellen.",
+                "author": "",
+                "items": {}
+            }
+                
+            embed = await return_embed(dict_)
+            await self.bot.ruleschannel.send(embed=embed)
+
+            dict_ = {
+                "url": "",
+                "title": "Regel 2",
+                "description": f"Het bespreken van strafmaatregelen tegen andere klanten dient \
+                    te geschieden in een ticket, bij voorkeur, of de algemene Discord.\
+                    \n\
+                    \nStaff lastigvallen om hier dingen geregeld te krijgen heeft ook geen effect.",
+                "author": "",
+                "items": {}
+            }
+                
+            embed = await return_embed(dict_)
+            await self.bot.ruleschannel.send(embed=embed)
+
+            dict_ = {
+                "url": "",
+                "title": "Regel 3",
+                "description": f"Taalgebruik verder dient te gebeuren met al het mogelijke respect voor anderen.\
+                    \nMet ziektes schelden, het n-woord of andere racistische of seksistische uitspraken \
+                    zijn hier ook niet welkom.",
+                "author": "",
+                "items": {}
+            }
+                
+            embed = await return_embed(dict_)
+            await self.bot.ruleschannel.send(embed=embed)
+
+            dict_ = {
+                "url": "",
+                "title": "Regel 4",
+                "description": f"Het is niet toegestaan om zinloze tickets te openen, \
+                    te spammen (meerdere berichten, caps, emojis).",
+                "author": "",
+                "items": {}
+            }
+                
+            embed = await return_embed(dict_)
+            await self.bot.ruleschannel.send(embed=embed)
+
+            dict_ = {
+                "url": "",
+                "title": "Regel 5",
+                "description": f"Mocht het nog niet duidelijk zijn, het is dus de bedoeling \
+                    dat u ten allen tijden met respect praat t.o.v. anderen.\
+                    \nHet maakt niet uit of het een medewerker, vriend, burger of stafflid is.\
+                    \n\
+                    \nDe communicatie hier gebeurt strikt professioneel.",
+                "author": "",
+                "items": {}
+            }
+                
+            embed = await return_embed(dict_)
+            await self.bot.ruleschannel.send(embed=embed)
+
+            dict_ = {
+                "url": "",
+                "title": "Regel 6",
+                "description": f"Roddels of onwaarheden verspreiden (lees eerroof of laster) zal \
+                    met harde hand op gereageerd worden (in RP).\
+                    \n\
+                    \nFouten kunnen gebeuren, dat is nu eenmaal menselijk.\
+                    \nWe doen ons uiterste best om daar een compromis als oplossing in te bekomen, \
+                    indien mogelijk.\
+                    \nOnze excuses mocht dat bij u plaats vinden/hebben gevonden.\
+                    \nWij streven naar professionaliteit en voortbrengen van een nieuwe RP in Grp.\
+                    \nRoddels of onwaarheden verspreiden ",
+                "author": "",
+                "items": {}
+            }
+                
+            embed = await return_embed(dict_)
+            await self.bot.ruleschannel.send(embed=embed)
+
+            dict_ = {
+                "url": "",
+                "title": "Regel 7",
+                "description": f"Alle communicatie op dit kanaal na, gebeurt IC.\
+                    \nDiscord word hulpcentrum/contactformulier.\
+                    \nOverige termen lijken ons vanzelfsprekend.\
+                    \nHet is dus ten strengste verboden om IC en OOC door elkaar te halen.\
+                    \nHier zal streng op worden toegekeken.",
+                "author": "",
+                "items": {}
+            }
+                
+            embed = await return_embed(dict_)
+            await self.bot.ruleschannel.send(embed=embed)
+
+            dict_ = {
+                "url": "",
+                "title": "Overeenkomst",
+                "description": f"Indien u akkoord bent met deze regels en onze manier van werken \
+                    klikt u vervolgens op de emoji hieronder.",
+                "author": "",
+                "items": {}
+            }
+
+            embed = await return_embed(dict_)
+            message = await self.bot.ruleschannel.send(embed=embed)
+            await message.add_reaction('👌')
+            general.write_yaml("rolegiver", message.id)
+
     @commands.command()
     async def setupbutton(self, ctx):
-        tekst = f"Klik hieronder op een van de knoppen om de juiste hulp te krijgen."
-        embed=discord.Embed(title="Verzekerings Kantoor Groningen - Supportcentrum", description=tekst, url='http://vkg.groningenrp.xyz', color=0xff0000)
-        embed.set_footer(text=self.bot.user.name)
-        await self.bot.ticketchannel.send(embed=embed, view=ChannelButton(self.bot))
+        if general.check_perms('dev', ctx):
+            dict_ = {
+                "url": "",
+                "title": "Verzekerings Kantoor Groningen - Supportcentrum",
+                "description": "Klik hieronder op een van de knoppen om de juiste hulp te krijgen.",
+                "author": "",
+                "items": {}
+            }
+                
+            embed = await return_embed(dict_)        
+            await self.bot.ticketchannel.send(embed=embed, view=ChannelButton(self.bot))
 
     @commands.command(aliases=['waarschuw'])
     async def warn(self, ctx, member: discord.Member, *, reason="geen reden opgegeven"):
@@ -343,20 +512,18 @@ class administration(commands.Cog):
             os.kill(os.getppid(), signal.SIGHUP)
 
     @commands.command(aliases=['reload'])
-    async def reload_specific_cog_command(self, ctx, arg: str):
-        await ctx.send(f'{ctx.author.mention}, ik ga proberen om {arg} te reloaden.', delete_after=10)
+    async def reload_specific_cog_command(self, ctx, arg: str):        
         if general.check_perms('dev', ctx):
-            msg_sent = False
-            for root, dirs, files in os.walk("cogs\\", topdown=False):
-                for name in files:
-                    if name.endswith(f'{arg}.py'):
-                        self.bot.reload_extension(os.path.join(root,name).replace('\\', '.')[:-3])
-                        bot_speaks(self.bot, f'Reloading cog {arg}.')
-                        await ctx.send(f'{ctx.author.mention}, {arg} is gereload.', delete_after=10)
-                        msg_sent = True
-                    
-            if (msg_sent == False):
-                await ctx.send(f'{ctx.author.mention}, jammer genoeg is er geen cog met die naam.', delete_after=10)
+            await ctx.send(f'{ctx.author.mention}, ik ga proberen om {arg} te reloaden.', delete_after=10)
+            cog = None
+
+            if self.bot.coglist[arg]:
+                cog = self.bot.coglist[arg]
+                self.bot.reload_extension(cog)
+                await ctx.send(f'{ctx.author.mention}, {arg} werd gereload.', delete_after=10)
+                
+            else:
+                await ctx.send(f'{ctx.author.mention}, jammer genoeg is er geen cog met die naam.', delete_after=10)                            
 
     @commands.command(aliases=['geef'])
     async def _add_role(self, ctx, param_one: typing.Union[discord.Member, discord.Role, str], param_two: typing.Union[discord.Member, discord.Role, str]):

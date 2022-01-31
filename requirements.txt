@@ -3,3 +3,5 @@ python-time
 pyyaml
 mysql.connector
 python-dotenv
+python-dateutil
+copy

@@ -8,7 +8,6 @@ from general_bot import bot_speaks
 
 def make_log(log_dict):
     load_dotenv()
-    
     mydb = mysql.connector.connect(
         host=os.getenv('DB_SERVERNAME'),
         user=os.getenv('DB_USERNAME'),
@@ -56,11 +55,32 @@ async def make_discord_log(self, ctx, log_dict):
         type = "Survey opgevangen"
         description = f"{log_dict['reason']}"
         log_dict['perms'] = "tickets"
+    elif log_dict['type'] == 7:
+        type = "Nieuwe klant"
+        description = f"{log_dict['reason']}"
+        log_dict['perms'] = "basic"
+    elif log_dict['type'] == 8:
+        type = "Wijziging klant"
+        description = f"{log_dict['reason']}"
+        log_dict['perms'] = "basic"
+    elif log_dict['type'] == 9:
+        type = "Wijziging kluis"
+        description = f"{log_dict['reason']}"
+        log_dict['perms'] = "kluis"
+    elif log_dict['type'] == 10:
+        type = "Wijziging kluis"
+        description = f"{log_dict['reason']}"
+        log_dict['perms'] = "repairkits"
 
     value = datetime.fromtimestamp(log_dict['unixtime'])
     embed = discord.Embed(title=type, description=description, url=home, color=0xff0000)
     embed.set_author(name="Verzekerings Kantoor Groningen")
     embed.set_footer(text=f'{self.bot.user.name} - {value:%d-%m-%y %H:%M:%S}')
+
+    if "items" in log_dict:
+        for k,v in log_dict['items'].items():
+            embed.add_field(name=k, value=v, inline=False)
+
     channel = discord.utils.get(ctx.guild.channels, id=general.return_log_channel_id(log_dict['perms']))
     await channel.send(embed=embed)
 
@@ -84,13 +104,14 @@ async def make_embed(self, ctx, dict_):
 
     embed=discord.Embed(title=f'{title}', description=f'{description}', url=url, color=0xff0000)
 
-    for k,v in dict_['items'].items():
-        embed.add_field(name=k, value=v, inline=False)
+    if dict_['items'].items():
+        for k,v in dict_['items'].items():
+            embed.add_field(name=k, value=v, inline=False)
 
     embed.set_footer(text=self.bot.user.name)
     await ctx.send(embed=embed)
 
-async def return_embed(dict_):
+async def return_embed(dict_, color=0x1E90FF):
     home = "http://vkg.groningenrp.xyz"
     
     if not dict_['url'] == None and not dict_['url'] == "":
@@ -108,10 +129,11 @@ async def return_embed(dict_):
     else:
         description = ""
         
-    embed=discord.Embed(title=f'{title}', description=f'{description}', url=url, color=0xff0000)
+    embed=discord.Embed(title=f'{title}', description=f'{description}', url=url, color=color)
     
-    for k,v in dict_['items'].items():
-        embed.add_field(name=k, value=v, inline=False)
+    if dict_['items'].items():
+        for k,v in dict_['items'].items():
+            embed.add_field(name=k, value=v, inline=False)
         
     embed.set_footer(text="Sofia Sarafian")
     return embed
