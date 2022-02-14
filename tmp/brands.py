@@ -16,7 +16,7 @@ class brands(commands.Cog):
 
     @commands.command(aliases=['merk-add'])
     async def _brand_add_command(self, ctx, arg1: str, arg2: str):
-        if check_perms('administrative', ctx):
+        if check_perms('administrative', ctx.author):
             load_dotenv()
             mydb = mysql.connector.connect(
                 host=os.getenv('DB_SERVERNAME'),
@@ -37,7 +37,7 @@ class brands(commands.Cog):
 
     @commands.command(aliases=['merk-edit'])
     async def _brand_edit_command(self, ctx, var, arg1: str, arg2: str):
-        if check_perms('administrative', ctx):
+        if check_perms('administrative', ctx.author):
             load_dotenv()
             mydb = mysql.connector.connect(
                 host=os.getenv('DB_SERVERNAME'),
@@ -62,7 +62,7 @@ class brands(commands.Cog):
 
     @commands.command(aliases=['merk-see'])
     async def _brand_see_command(self, ctx, arg1: str):
-        if check_perms('basic', ctx):
+        if check_perms('basic', ctx.author):
             load_dotenv()
             mydb = mysql.connector.connect(
                 host=os.getenv('DB_SERVERNAME'),

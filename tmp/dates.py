@@ -14,7 +14,7 @@ class dates(commands.Cog):
 
     @commands.command(aliases=['date-see'])
     async def _dates_see_command(self, ctx, arg1: str):
-        if check_perms('basic', ctx):
+        if check_perms('basic', ctx.author):
             load_dotenv()
             mydb = mysql.connector.connect(
                 host=os.getenv('DB_SERVERNAME'),
@@ -46,7 +46,7 @@ class dates(commands.Cog):
 
     @commands.command(aliases=['date-fix'])
     async def _dates_add_fix(self, ctx):
-        if check_perms('dev', ctx):
+        if check_perms('dev', ctx.author):
             enabled = False
             if (enabled):
                 load_dotenv()

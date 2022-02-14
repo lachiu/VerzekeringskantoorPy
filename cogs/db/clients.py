@@ -1,5 +1,6 @@
 import os
 import yaml
+import time
 import logs
 import general
 import discord
@@ -91,21 +92,20 @@ class clients(commands.Cog):
 
         def getclient(discordid):
             sql = "SELECT * FROM `tbl_clients` WHERE `discordID` LIKE %s LIMIT 1;"
-            mycursor.execute(sql, (discordid,))
+            mycursor = mydb.cursor()
+            mycursor.execute(sql, (discordid,))            
             myresult = mycursor.fetchall()
             clientID = myresult[0][0]
-            klantdict_ = {
-                "fivemID": myresult[0][1],
-                "discordID": myresult[0][2],
-                "fname": myresult[0][3],
-                "lname": myresult[0][4],
-                "dob": myresult[0][5],
-                "licenseA": myresult[0][6],
-                "licenseB": myresult[0][7],
-                "licenseC": myresult[0][8],
-                "flight": myresult[0][9],
-                "vaarbewijs": myresult[0][10]
-            }
+            klantdict_["fivemID"] = myresult[0][1]
+            klantdict_["discordID"] = myresult[0][2]
+            klantdict_["fname"] = myresult[0][3]
+            klantdict_["lname"] = myresult[0][4]
+            klantdict_["dob"] = myresult[0][5]
+            klantdict_["licenseA"] = myresult[0][6]
+            klantdict_["licenseB"] = myresult[0][7]
+            klantdict_["licenseC"] = myresult[0][8]
+            klantdict_["flight"] = myresult[0][9]
+            klantdict_["vaarbewijs"] = myresult[0][10]
 
         def checkreaction(reaction, user):
             return user == ctx.author and reaction.message.channel == ctx.channel
@@ -310,6 +310,7 @@ class clients(commands.Cog):
                 "items": tmpitems
             }
 
+            bot_speaks(self.bot, f"Klant met discordid {klantdict_['discordID']} werd opgevraagd door {ctx.author.name}.")
             return dict_
 
         async def keuzemenu():
@@ -367,7 +368,7 @@ class clients(commands.Cog):
                     else:
                         surebool = True
 
-        if general.check_perms('basic', ctx):
+        if general.check_perms('basic', ctx.author):
             load_dotenv()
             mydb = mysql.connector.connect(
                 host=os.getenv('DB_SERVERNAME'),
@@ -375,7 +376,6 @@ class clients(commands.Cog):
                 password=os.getenv('DB_PASSWORD'),
                 database=os.getenv('DB_NAME')
             )
-            mycursor = mydb.cursor()
 
             if commandtype == "add" or commandtype == "new" or commandtype == "nieuw" or commandtype == "toevoegen":
                 # Add command
@@ -403,18 +403,31 @@ class clients(commands.Cog):
                 except:
                     # Toevoegen aan db
                     sql = "INSERT INTO `tbl_clients`(`id`, `fivemID`, `discordID`, `fname`, `lname`, `dob`, `licenseA`, `licenseB`, `licenseC`, `flight`, `vaarbewijs`) VALUES (NULL, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);"
+                    mycursor = mydb.cursor()
                     mycursor.execute(sql, (klantdict_["fivemID"], klantdict_["discordID"], klantdict_["fname"], klantdict_["lname"], klantdict_["dob"], klantdict_["licenseA"], klantdict_["licenseB"], klantdict_["licenseC"], klantdict_["flight"], klantdict_["vaarbewijs"]))
                     mydb.commit()
+                    bot_speaks(self.bot, f"{ctx.author.name} heeft een nieuwe klant met discordid {klantdict_['discordID']} toegevoegd. Er werd {mycursor.rowcount} record toegevoegd.")
 
                     dict_ = {
                         "url": "",
-                        "title": "Succes",
+                        "title": "Succesvol toegevoegd",
                         "description": f"{ctx.author.mention}, de nieuwe klant werd toegevoegd.",
                         "author": "",
                         "items": {}
                     }
 
                     await logs.make_embed(self, ctx, dict_)
+
+                    log_dict = {
+                        "mod": ctx.author.id,
+                        "user": ctx.author.id,
+                        "reason": f"{ctx.author.mention} heeft een nieuwe klant toegevoegd, namelijk {returnmember(klantdict_['discordID']).mention}.",
+                        "unixtime": int(time.time()),
+                        "perms": "administrative",
+                        "type": 8
+                    }
+
+                    await logs.make_discord_log(self, ctx, log_dict)
                 else:
                     member = ctx.guild.get_member(int(klantdict_["discordID"]))
                     dict_ = {
@@ -427,7 +440,6 @@ class clients(commands.Cog):
 
                     await logs.make_embed(self, ctx, dict_) 
 
-            # Edit command
             if commandtype == "edit" or commandtype == "aanpassen" or commandtype == "pasaan" or commandtype == "verander":
                 # Selecteer de klant/gebruiker
                 member = None
@@ -484,25 +496,14 @@ class clients(commands.Cog):
                     await changevalue(keuze)
 
                 await verificatiemenu()
-                
                 # Update sql
-                sql = "UPDATE `tbl_clients` SET `fivemID`=%s, `discordID`=%s, `fname`=%s,\
+                sql = "UPDATE `tbl_clients` SET `fivemID`=%s, `fname`=%s,\
                     `lname`=%s,`dob`=%s,`licenseA`=%s,`licenseB`=%s,`licenseC`=%s,\
-                    `flight`=%s,`vaarbewijs`=%s WHERE `id` LIKE %s;"
-                mycursor.execute(sql, (
-                    klantdict_["fivemID"],
-                    klantdict_["discordID"],
-                    klantdict_["fname"],
-                    klantdict_["lname"],
-                    klantdict_["dob"],
-                    klantdict_["licenseA"],
-                    klantdict_["licenseB"],
-                    klantdict_["licenseC"],
-                    klantdict_["flight"],
-                    klantdict_["vaarbewijs"],
-                    clientID))
+                    `flight`=%s,`vaarbewijs`=%s WHERE `discordID` LIKE %s;"
+                mycursor = mydb.cursor()
+                mycursor.execute(sql, (klantdict_["fivemID"], klantdict_["fname"], klantdict_["lname"], klantdict_["dob"], klantdict_["licenseA"], klantdict_["licenseB"], klantdict_["licenseC"], klantdict_["flight"], klantdict_["vaarbewijs"], klantdict_["discordID"]))
                 mydb.commit()
-                
+                bot_speaks(self.bot, f"Bij het updaten van klant {klantdict_['discordID']}: {mycursor.rowcount} record(s) aangepast")
                 dict_ = {
                     "url": "",
                     "title": "Succesvol aangepast",
@@ -513,36 +514,44 @@ class clients(commands.Cog):
 
                 await logs.make_embed(self, ctx, dict_)
 
+                log_dict = {
+                    "mod": ctx.author.id,
+                    "user": ctx.author.id,
+                    "reason": f"{ctx.author.mention} heeft {returnmember(klantdict_['discordID']).mention} zijn of haar {keuze} aangepast.",
+                    "unixtime": int(time.time()),
+                    "perms": "administrative",
+                    "type": 8
+                }
+
+                await logs.make_discord_log(self, ctx, log_dict)
+
             if commandtype == "bekijken" or commandtype == "zie" or commandtype == "see":
-                if general.check_perms('basic', ctx):
-                    member = None
+                member = None
 
-                    if args:
-                        args = list(args.split(' '))
+                if args:
+                    args = list(args.split(' '))
 
-                        try:
-                            member = await returnmember(args[0])
-                            klantdict_["discordID"] = str(member.id)
-                        except:
-                            pass
-                    
-                    if klantdict_["discordID"] == None:
-                        await changevalue("discordID")
-                    
                     try:
-                        getclient(klantdict_["discordID"])
-                    except:
-                        await ctx.send("Die persoon is geen klant bij ons of heeft zijn discord niet gelinkt.", delete_after=20)
-                        
-                    await ctx.send(klantdict_)
-                    await logs.make_embed(self, ctx, toonhuidige())
-
-            if commandtype == "ziehuidig":
-                if general.check_perms('basic', ctx):
-                    try:
-                        await logs.make_embed(self, ctx, toonhuidige())                
+                        member = await returnmember(args[0])
+                        klantdict_["discordID"] = str(member.id)
                     except:
                         pass
+                
+                if klantdict_["discordID"] == None:
+                    await changevalue("discordID")
+                
+                try:
+                    getclient(klantdict_["discordID"])
+                except:
+                    await ctx.send("Die persoon is geen klant bij ons of heeft zijn discord niet gelinkt.", delete_after=20)
+
+                await logs.make_embed(self, ctx, toonhuidige())
+
+            if commandtype == "ziehuidig":
+                try:
+                    await logs.make_embed(self, ctx, toonhuidige())                
+                except:
+                    pass
 
 def setup(bot):
     bot.add_cog(clients(bot))

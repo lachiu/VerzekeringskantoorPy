@@ -71,6 +71,14 @@ async def make_discord_log(self, ctx, log_dict):
         type = "Wijziging kluis"
         description = f"{log_dict['reason']}"
         log_dict['perms'] = "repairkits"
+    elif log_dict['type'] == 11:
+        type = "Nieuwe werknemer"
+        description = f"{log_dict['reason']}"
+        log_dict['perms'] = "administrative"
+    elif log_dict['type'] == 12:
+        type = "Wijziging werknemer"
+        description = f"{log_dict['reason']}"
+        log_dict['perms'] = "administrative"
 
     value = datetime.fromtimestamp(log_dict['unixtime'])
     embed = discord.Embed(title=type, description=description, url=home, color=0xff0000)

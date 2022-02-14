@@ -1,5 +1,6 @@
 import os
 import yaml
+import time
 import logs
 import general
 import discord
@@ -185,21 +186,17 @@ class employees(commands.Cog):
 
         def getagent(discordid):
             sql = "SELECT * FROM `tbl_agents` WHERE `discordID` LIKE %s LIMIT 1;"
+            mycursor = mydb.cursor()
             mycursor.execute(sql, (discordid,))
             myresult = mycursor.fetchall()
-            print(myresult)
-            print(myresult[0])
             agentID = myresult[0][0]
-            employeedict_ = {
-                "fivemID": myresult[0][1],
-                "discordID": myresult[0][2],
-                "fname": myresult[0][3],
-                "lname": myresult[0][4],
-                "pwd": myresult[0][5],
-                "dob": myresult[0][6],
-                "enabled": myresult[0][7]
-            } 
-            print(employeedict_)
+            employeedict_["fivemID"] = myresult[0][1]
+            employeedict_["discordID"] = myresult[0][2]
+            employeedict_["fname"] = myresult[0][3]
+            employeedict_["lname"] = myresult[0][4]
+            employeedict_["pwd"] = myresult[0][5]
+            employeedict_["dob"] = myresult[0][6]
+            employeedict_["enabled"] = myresult[0][7]
 
         async def requestvalue(type):
             dict_ = None
@@ -241,7 +238,6 @@ class employees(commands.Cog):
         def toonhuidige():
             tmpitems = {}
             tmpvalue = None
-            print(employeedict_)
             for key,value in employeedict_.items():
                 if key == "fivemID" or key == "discordID":
                     if value == None or value == "geen" or value == "leeg":
@@ -256,9 +252,7 @@ class employees(commands.Cog):
                         tmpvalue = value
 
                 if key == "dob":
-                    try: 
-                        print(key)
-                        print(value)
+                    try:
                         tmpvalue = value.strftime("%d-%m-%Y")
                     except:
                         tmpvalue = datetime.date(1900, 1, 1)
@@ -277,9 +271,7 @@ class employees(commands.Cog):
                         tmpvalue = ":white_check_mark:"
 
 
-                tmpitems[front_end_namen[key]] = tmpvalue
-
-            
+                tmpitems[front_end_namen[key]] = tmpvalue            
 
             dict_ = {
                 "url": "",
@@ -288,7 +280,8 @@ class employees(commands.Cog):
                 "author": "",
                 "items": tmpitems
             }
-
+            
+            bot_speaks(self.bot, f"Werknemer met discordid {employeedict_['discordID']} werd opgevraagd door {ctx.author.name}.")
             return dict_
 
         async def keuzemenu():
@@ -303,8 +296,6 @@ class employees(commands.Cog):
                     "author": "",
                     "items": {}
                 }
-
-                dict_["description"] = dict_["description"] + ""
                     
                 for key,value in templateemployedict_.items():
                     if not key == "pwd":
@@ -347,15 +338,14 @@ class employees(commands.Cog):
                     else:
                         surebool = True
 
-        if general.check_perms('administrative', ctx):
+        if general.check_perms('administrative', ctx.author):
             load_dotenv()
             mydb = mysql.connector.connect(
                 host=os.getenv('DB_SERVERNAME'),
                 user=os.getenv('DB_USERNAME'),
                 password=os.getenv('DB_PASSWORD'),
                 database=os.getenv('DB_NAME')
-            )
-            mycursor = mydb.cursor()
+            )            
 
             if commandtype == "add" or commandtype == "new" or commandtype == "nieuw" or commandtype == "toevoegen":
                 # Add command
@@ -381,8 +371,10 @@ class employees(commands.Cog):
                 except:
                     # Toevoegen aan db
                     sql = "INSERT INTO `tbl_agents`(`id`, `fivemID`, `discordID`, `fname`, `lname`, `pwd`, `dob`, `enabled`) VALUES (NULL, %s, %s, %s, %s, NULL, %s, 1);"
+                    mycursor = mydb.cursor()
                     mycursor.execute(sql, (employeedict_["fivemID"], employeedict_["discordID"], employeedict_["fname"], employeedict_["lname"], employeedict_["dob"]))
                     mydb.commit()
+                    bot_speaks(self.bot, f"{ctx.author.name} heeft een nieuwe werknemer met discordid {employeedict_['discordID']} toegevoegd. Er werd {mycursor.rowcount} record toegevoegd.")
 
                     dict_ = {
                         "url": "",
@@ -393,6 +385,17 @@ class employees(commands.Cog):
                     }
 
                     await logs.make_embed(self, ctx, dict_)
+
+                    log_dict = {
+                        "mod": ctx.author.id,
+                        "user": ctx.author.id,
+                        "reason": f"{ctx.author.mention} heeft een nieuwe werknemer, namelijk {returnmember(employeedict_['discordID']).mention}, toegevoegd.",
+                        "unixtime": int(time.time()),
+                        "perms": "administrative",
+                        "type": 11
+                    }
+
+                    await logs.make_discord_log(self, ctx, log_dict)
                 else:
                     member = ctx.guild.get_member(int(employeedict_["discordID"]))
                     dict_ = {
@@ -405,7 +408,6 @@ class employees(commands.Cog):
 
                     await logs.make_embed(self, ctx, dict_)   
 
-            # Edit command
             if commandtype == "edit" or commandtype == "aanpassen" or commandtype == "pasaan" or commandtype == "verander":
                 # Selecteer de werknemer
                 member = None
@@ -434,6 +436,7 @@ class employees(commands.Cog):
                 if employeedict_["discordID"] == None:
                     await changevalue("discordID")
                 
+                getagent(employeedict_["discordID"])
                 try:
                     getagent(employeedict_["discordID"])
                 except:
@@ -462,10 +465,10 @@ class employees(commands.Cog):
                     await changevalue(keuze)
 
                 await verificatiemenu()
-                
                 # Update sql
                 sql = "UPDATE `tbl_agents` SET `fivemID`=%s, `discordID`=%s, `fname`=%s,\
-                    `lname`=%s, `dob`=%s, `enabled`=%s WHERE `id` LIKE %s;"
+                    `lname`=%s, `dob`=%s, `enabled`=%s WHERE `discordID` LIKE %s;"
+                mycursor = mydb.cursor()
                 mycursor.execute(sql, (
                     employeedict_["fivemID"],
                     employeedict_["discordID"],
@@ -473,8 +476,9 @@ class employees(commands.Cog):
                     employeedict_["lname"],
                     employeedict_["dob"],
                     employeedict_["enabled"],
-                    agentID))
+                    employeedict_["discordID"]))
                 mydb.commit()
+                bot_speaks(self.bot, f"Bij het updaten van werknemer {employeedict_['discordID']}: {mycursor.rowcount} record(s) aangepast")
                 
                 dict_ = {
                     "url": "",
@@ -486,36 +490,44 @@ class employees(commands.Cog):
 
                 await logs.make_embed(self, ctx, dict_)
 
+                log_dict = {
+                    "mod": ctx.author.id,
+                    "user": ctx.author.id,
+                    "reason": f"{ctx.author.mention} heeft {returnmember(employeedict_['discordID']).mention} zijn of haar {keuze} aangepast.",
+                    "unixtime": int(time.time()),
+                    "perms": "administrative",
+                    "type": 12
+                }
+
+                await logs.make_discord_log(self, ctx, log_dict)
+
             if commandtype == "bekijken" or commandtype == "zie" or commandtype == "see":
-                if general.check_perms('administrative', ctx):
-                    member = None
+                member = None
 
-                    if args:
-                        args = list(args.split(' '))
+                if args:
+                    args = list(args.split(' '))
 
-                        try:
-                            member = await returnmember(args[0])
-                            employeedict_["discordID"] = str(member.id)
-                        except:
-                            pass
-                    
-                    if employeedict_["discordID"] == None:
-                        await changevalue("discordID")
-                        
                     try:
-                        getagent(employeedict_["discordID"])
-                        print(employeedict_)
-                    except:
-                        await ctx.send("Die persoon is geen werknemer bij ons of heeft zijn discord niet gelinkt.", delete_after=20)
-
-                    await logs.make_embed(self, ctx, toonhuidige())
-
-            if commandtype == "ziehuidig":
-                if general.check_perms('administrative', ctx):
-                    try:
-                        await logs.make_embed(self, ctx, toonhuidige())                
+                        member = await returnmember(args[0])
+                        employeedict_["discordID"] = str(member.id)
                     except:
                         pass
+                
+                if employeedict_["discordID"] == None:
+                    await changevalue("discordID")
+                    
+                try:
+                    getagent(employeedict_["discordID"])
+                except:
+                    await ctx.send("Die persoon is geen werknemer bij ons of heeft zijn discord niet gelinkt.", delete_after=20)
+
+                await logs.make_embed(self, ctx, toonhuidige())
+
+            if commandtype == "ziehuidig":
+                try:
+                    await logs.make_embed(self, ctx, toonhuidige())                
+                except:
+                    pass
 
 def setup(bot):
     bot.add_cog(employees(bot))

@@ -158,7 +158,7 @@ class cars(commands.Cog):
             elif str(v[0]) == '❌':
                 return 0
 
-        if check_perms('administrative', ctx):
+        if check_perms('administrative', ctx.author):
             load_dotenv()
             mydb = mysql.connector.connect(
                 host=os.getenv('DB_SERVERNAME'),
@@ -340,7 +340,7 @@ class cars(commands.Cog):
             num = format(v * 1000, '8_.2f').replace('.', ',').replace('_', '.')
             return f"€ {num}"
 
-        if check_perms('administrative', ctx):
+        if check_perms('administrative', ctx.author):
             ToDelete = []
             load_dotenv()
             mydb = mysql.connector.connect(
@@ -711,7 +711,7 @@ class cars(commands.Cog):
             price = format(v * 1000, '8_.2f').replace('.', ',').replace('_', '.')
             return f"€ {price}"
 
-        if check_perms('basic', ctx):
+        if check_perms('basic', ctx.author):
             # Connectie maken
             load_dotenv()
             mydb = mysql.connector.connect(
@@ -793,7 +793,7 @@ class cars(commands.Cog):
         
     @commands.command(aliases=['cars-see'])
     async def _cars_see_command(self, ctx, brand: str):
-        if check_perms('basic', ctx):
+        if check_perms('basic', ctx.author):
             load_dotenv()
             mydb = mysql.connector.connect(
                 host=os.getenv('DB_SERVERNAME'),
@@ -822,7 +822,7 @@ class cars(commands.Cog):
 
     @commands.command(aliases=['cars-add-month'])
     async def _cars_new_month_command(self, ctx):
-        if check_perms('dev', ctx):
+        if check_perms('dev', ctx.author):
             # Connectie maken
             load_dotenv()
             mydb = mysql.connector.connect(
@@ -898,7 +898,7 @@ class cars(commands.Cog):
         
     @commands.command(aliases=['cars-fix'])
     async def _cars_new_month_command_fix(self, ctx):
-        if check_perms('dev', ctx):
+        if check_perms('dev', ctx.author):
             # Connectie maken
             load_dotenv()
             mydb = mysql.connector.connect(

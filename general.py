@@ -39,12 +39,12 @@ def return_log_channel_id(log_perm):
     yaml_content = open_yaml("permissions")
     return yaml_content['log_channels'][log_perm.lower()]
 
-def check_perms(roles, ctx):
+def check_perms(roles, member):
     yaml_content = open_yaml("permissions")
     setting_roles = yaml_content[roles]
     
     try:
-        tmp_roles = ctx.author.roles
+        tmp_roles = member.roles
     except:
         pass
     else:

@@ -59,7 +59,7 @@ class economy(commands.Cog):
             message = await self.bot.wait_for('message', timeout=120.0, check=checkmessage)
             return message.content
 
-        if general.check_perms('administrative', ctx):
+        if general.check_perms('administrative', ctx.author):
             repairkits = general.open_yaml("repairkits")
 
             if commandtype == "take" or commandtype == "neem":
@@ -200,7 +200,7 @@ class economy(commands.Cog):
             message = await self.bot.wait_for('message', timeout=120.0, check=checkmessage)
             return message.content
 
-        if general.check_perms('administrative', ctx):
+        if general.check_perms('administrative', ctx.author):
             kluis = general.open_yaml("kluis")
 
             if commandtype == "take" or commandtype == "neem":

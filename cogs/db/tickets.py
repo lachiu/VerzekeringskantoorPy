@@ -18,7 +18,7 @@ class tickets(commands.Cog):
 
     @commands.command()
     async def rename(self, ctx, tmpname: str):
-        if general.check_perms('basic', ctx) and general.isTicket(ctx.channel.category_id):
+        if general.check_perms('basic', ctx.author) and general.isTicket(ctx.channel.category_id):
             current_channel = ctx.message.channel
             channel_icon = current_channel.name[:1]
             newname = f"{channel_icon}-{tmpname}"
@@ -26,7 +26,7 @@ class tickets(commands.Cog):
 
     @commands.command(aliases=['aanmaken', 'maakaan'])
     async def create(self, ctx):
-        if general.check_perms('dev', ctx):
+        if general.check_perms('dev', ctx.author):
             load_dotenv()
             mydb = mysql.connector.connect(
                 host=os.getenv('DB_SERVERNAME'),
@@ -43,7 +43,7 @@ class tickets(commands.Cog):
     @commands.command(aliases=['lift'])
     async def elevate(self, ctx):
         # Moved nog uit directeur
-        if general.check_perms('basic', ctx):
+        if general.check_perms('basic', ctx.author):
             current_channel = ctx.message.channel
             current_category = current_channel.category_id
 
@@ -58,7 +58,7 @@ class tickets(commands.Cog):
 
     @commands.command(aliases=['zekervanmij'])
     async def forceclaim(self, ctx, member: discord.Member = None, target: discord.Member = None):
-        if general.check_perms('administrative', ctx):
+        if general.check_perms('administrative', ctx.author):
             if general.isTicket(ctx.channel.category_id):
                 if member == None:
                     member = ctx
@@ -153,7 +153,7 @@ class tickets(commands.Cog):
 
     @commands.command(aliases=['vanmij'])
     async def claim(self, ctx, member: discord.Member = None):
-        if general.check_perms('basic', ctx):
+        if general.check_perms('basic', ctx.author):
             if general.isTicket(ctx.channel.category_id):
                 if member == None:
                     member = ctx
@@ -254,7 +254,7 @@ class tickets(commands.Cog):
 
     @commands.command(aliases=['afhandelen', 'afgehandeld', 'close'])
     async def done(self, ctx):
-        if general.check_perms('basic', ctx) and general.isTicket(ctx.channel.category_id):
+        if general.check_perms('basic', ctx.author) and general.isTicket(ctx.channel.category_id):
             load_dotenv()
             mydb = mysql.connector.connect(
                 host=os.getenv('DB_SERVERNAME'),
@@ -312,7 +312,7 @@ class tickets(commands.Cog):
         def checkmessage(m):
             return m.channel == ctx.channel and m.author == target
 
-        if general.check_perms('basic', ctx):
+        if general.check_perms('basic', ctx.author):
             # Survey
             # U werd geholpen door ctx.author
             if general.isTicket(ctx.channel.category_id):

@@ -14,7 +14,7 @@ class cards(commands.Cog):
 
     @commands.command(aliases=['kaart'])
     async def card(self, ctx, type = None):
-        if general.check_perms('basic', ctx):
+        if general.check_perms('basic', ctx.author):
             if general.isTicket(ctx.channel.category_id):
                 dict_ = {
                     "url": "",

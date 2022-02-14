@@ -162,6 +162,30 @@ class administration(commands.Cog):
         self.bot = bot
 
     @commands.Cog.listener()
+    async def on_member_join(self, member):
+        dict_ = {
+            "url": "",
+            "title": "Welkom bij VKG",
+            "description": f"Beste {member.mention},\n\
+                \n\
+                Van harte welkom!\
+                \nIndien u contact met ons wenst op te nemen kan u dat doen \
+                via ons ticketsysteem, die vind u terug in \
+                {self.bot.ticketchannel.mention} nadat u akkoord bent gegaan \
+                met de {self.bot.ruleschannel.mention}.\
+                \n\
+                \n\
+                Met vriendelijke groeten,\
+                \n{self.bot.user.mention}\
+                \nSecretaresse",
+            "author": "",
+            "items": {}
+        }
+        embed = await return_embed(dict_, color=0xffffff)
+        message = await self.bot.frontdoor.send(embed=embed)
+        await message.add_reaction('👋')
+
+    @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
         rolegivermessageid = int(general.open_yaml("rolegiver"))
         if rolegivermessageid == payload.message_id and not payload.user_id == self.bot.user.id:
@@ -176,7 +200,7 @@ class administration(commands.Cog):
 
     @commands.command()
     async def setuprules(self, ctx):
-        if general.check_perms('dev', ctx):
+        if general.check_perms('dev', ctx.author):
             vkgGuild = self.bot.get_guild(875098573262438420)
             await self.bot.ruleschannel.purge(limit=10, bulk=False)
             jobmanagers = discord.utils.get(vkgGuild.roles, id=general.return_role_id("job manager"))
@@ -336,7 +360,7 @@ class administration(commands.Cog):
 
     @commands.command()
     async def setupbutton(self, ctx):
-        if general.check_perms('dev', ctx):
+        if general.check_perms('dev', ctx.author):
             dict_ = {
                 "url": "",
                 "title": "Verzekerings Kantoor Groningen - Supportcentrum",
@@ -348,9 +372,305 @@ class administration(commands.Cog):
             embed = await return_embed(dict_)        
             await self.bot.ticketchannel.send(embed=embed, view=ChannelButton(self.bot))
 
+    @commands.command()
+    async def setupschoolmessages(self, ctx):
+        if general.check_perms('dev', ctx.author):
+            # Eerst de kanalen purgen.
+            await self.bot.schooldocs.purge(limit=10, bulk=False)
+            await self.bot.schoollevelthree.purge(limit=10, bulk=False)
+            await self.bot.schoolleveltwo.purge(limit=10, bulk=False)
+            await self.bot.schoollevelone.purge(limit=10, bulk=False)
+            
+            # Document channel
+            # self.bot.schooldocs
+            # ======================================= #
+
+
+            # lvl-3 school channel
+            # self.bot.schoollevelthree
+            # ======================================= #
+            dict_ = {
+                "url": "",
+                "title": "Welkom bij VKG",
+                "description": f"Beste {self.bot.superrole.mention},\n\
+                    \n\
+                    Van harte welkom!\
+                    \n\
+                    \nVolgende zaken zitten in jouw takenpakket:\
+                    \n**Klachten die geëscaleerd werden behandelen**,\
+                    \n**Klachten m.b.t. jouw medewerkers behandelen**,\
+                    \n**Managers opleiden**,\
+                    \n**Overig lvl-2 takenpakket**\
+                    \n\
+                    \nDe verloningen:\
+                    \n**Per behandeld lvl-3 ticket: €1.500,00**,\
+                    \n**Per behandeld lvl-2 ticket: €1.000,00**,\
+                    \n**Per behandeld lvl-1 ticket: €500,00**,\
+                    \n**Per aangeworven medewerker: €500,00**,\
+                    \n**Per aangeworven klant: €500,00**,\
+                    \n**Per verkochte verzekering: 10%**\
+                    \n*Uitbetalingen gebeuren per week.*\
+                    \n\
+                    \nMochten er klachten zijn kan je bij {self.bot.boss.mention} terecht \
+                    \nof bij een {self.bot.jmrole.mention}.\
+                    \n\
+                    \nWe wensen jou veel succes met je nieuwe baan!\
+                    \n\
+                    Met vriendelijke groeten,\
+                    \n{self.bot.user.mention}\
+                    \nSecretaresse\
+                    \n\
+                    \n{self.bot.boss.mention}\
+                    \n{self.bot.directorrole.mention}",
+                "author": "",
+                "items": {}
+            }
+
+            embed = await return_embed(dict_, color=0xffffff)
+            await self.bot.schoollevelthree.send(embed=embed)
+
+            # lvl-2 school channel
+            # self.bot.schoolleveltwo
+            # ======================================= #
+            dict_ = {
+                "url": "",
+                "title": "Welkom bij VKG",
+                "description": f"Beste {self.bot.managerrole.mention},\n\
+                    \n\
+                    Van harte welkom!\
+                    \n\
+                    \nVolgende zaken zitten in jouw takenpakket:\
+                    \n**Klachten die geëscaleerd werden behandelen**,\
+                    \n**Verzekeringsagenten opleiden**,\
+                    \n**Overig lvl-1 takenpakket**\
+                    \n\
+                    \nDe verloningen:\
+                    \n**Per behandeld lvl-2 ticket: €1.000,00**,\
+                    \n**Per behandeld lvl-1 ticket: €500,00**,\
+                    \n**Per aangeworven medewerker: €500,00**,\
+                    \n**Per aangeworven klant: €500,00**,\
+                    \n**Per verkochte verzekering: 10%**\
+                    \n*Uitbetalingen gebeuren per week.*\
+                    \n\
+                    \nMochten er klachten zijn kan je bij {self.bot.superrole.mention}, {self.bot.boss.mention} \
+                    \nof bij {self.bot.jmrole.mention} terecht.\
+                    \n\
+                    \nWe wensen jou veel succes met je nieuwe baan!\
+                    \n\
+                    Met vriendelijke groeten,\
+                    \n{self.bot.user.mention}\
+                    \nSecretaresse\
+                    \n\
+                    \n{self.bot.boss.mention}\
+                    \n{self.bot.directorrole.mention}",
+                "author": "",
+                "items": {}
+            }
+
+            embed = await return_embed(dict_, color=0xffffff)
+            await self.bot.schoolleveltwo.send(embed=embed)
+
+            # Elevated ticket na schade toegewezen gekregen te hebben.
+            dict_ = {
+                "url": "",
+                "title": "Schuld betwisten",
+                "description": f"Dit is zowat het enige scenario dat ik me nu kan bedenken. \
+                    Verder komen er uiteraard situaties bij die de verzekeringsagenten niet kunnen afhandelen.\
+                    \n\
+                    \nDe klant geeft aan dat die niet akkoord is met het besluit van de collega.\
+                    Als het geen duidelijke zaak is, vraag je (in rp) naar een agent.",
+                "author": "",
+                "items": {}
+            }
+
+            embed = await return_embed(dict_, color=0xffffff)
+            await self.bot.schoolleveltwo.send(embed=embed)
+
+            # lvl-1 school channel
+            # self.bot.schoollevelone
+            # ======================================= #
+            dict_ = {
+                "url": "",
+                "title": "Welkom bij VKG",
+                "description": f"Beste {self.bot.agentrole.mention},\n\
+                    \n\
+                    Van harte welkom!\
+                    \n\
+                    \nVolgende zaken zitten in jouw takenpakket:\
+                    \n**Verzekeringen verkopen**,\
+                    \n**Aangiftes behandelen**,\
+                    \n**Problemen verhelpen**,\
+                    \n**Indien nodig, escaleer je de ticket.**\
+                    \n\
+                    \nDe verloningen:\
+                    \n**Per behandeld lvl-1 ticket: €500,00**,\
+                    \n**Per aangeworven medewerker: €500,00**,\
+                    \n**Per aangeworven klant: €500,00**,\
+                    \n**Per verkochte verzekering: 10%**\
+                    \n*Uitbetalingen gebeuren per week.*\
+                    \n\
+                    \nMochten er klachten zijn kan je bij {self.bot.managerrole.mention}, {self.bot.boss.mention} terecht \
+                    \nof bij een {self.bot.jmrole.mention}.\
+                    \n\
+                    \nWe wensen jou veel succes met je nieuwe baan!\
+                    \n\
+                    Met vriendelijke groeten,\
+                    \n{self.bot.user.mention}\
+                    \nSecretaresse\
+                    \n\
+                    \n{self.bot.boss.mention}\
+                    \n{self.bot.directorrole.mention}",
+                "author": "",
+                "items": {}
+            }
+
+            embed = await return_embed(dict_, color=0xffffff)
+            await self.bot.schoollevelone.send(embed=embed)
+            
+            dict_ = {
+                "url": "",
+                "title": "Nieuwe ticket",
+                "description": f"Oke, er werd een ticket geopend. Rustig in- en uitademen.\
+                    \nKlantvriendelijkheid staat voorop maar dat spreekt voor zich.\
+                    \n\
+                    \n__**Een (mogelijke) klant kan een ticket openen voor volgende zaken:**__\
+                    \n**Een probleem**,\
+                    \n**Een vraag**,\
+                    \n**Een aankoop**,\
+                    \n**Een ongeluk**\
+                    \n\
+                    \nEen vraag of probleem heeft iets te veel mogelijkheden om je daar \
+                    nu al goed op voor te bereiden. Als je twijfelt of een probleem hebt \
+                    kan je naar een manager vragen in {self.bot.officelevelone.mention}.\
+                    Mocht het nodig zijn kan je een ticket verhogen naar lvl-2 met de ``!lift`` command.",
+                "author": "",
+                "items": {}
+            }
+
+            embed = await return_embed(dict_, color=0xffffff)
+            await self.bot.schoollevelone.send(embed=embed)
+
+            dict_ = {
+                "url": "",
+                "title": "Verkoop-ticket",
+                "description": f"__**Een verkoop**__\
+                    \nIndien het om een auto gaat check je eerst om wat voor voertuig het gaat. (evt. met een foto) \
+                    Ook vraag je een foto van het kenteken ter bevestiging.\
+                    \nBij een zorgverzekering of ba verzekering vraag je om een foto van de \
+                    loonbrief (*F2-spier*). Dit mag de baan zijn die de laagste prijs verantwoord. \
+                    (bijvoorbeeld klant is werkzaam bij de politie en doet uwv baantjes, dan mag die de verzekering als agent aanvragen)\
+                    \nDe prijzen die je vind je terug in {self.bot.schooldocs.mention}.",
+                "author": "",
+                "items": {}
+            }
+
+            embed = await return_embed(dict_, color=0xffffff)
+            await self.bot.schoollevelone.send(embed=embed)
+
+            dict_ = {
+                "url": "",
+                "title": "Ongeluk-ticket",
+                "description": f"__**Een ongeluk**__ *(houd er rekening mee dat de persoon mogelijk gestresseerd is)*\
+                    \nVoor een geldige claim hebben we de gegevens nodig van:\
+                    \n**De klant zelf**, via het rijbewijs, *(verifieer de klant)*,\
+                    \n**Het voertuig en het kenteken**, *(verifieer met de polis via foto's)*,\
+                    \n**De locatie**, *(foto van de locatie met GPS zichtbaar)*,\
+                    \n**De schade**, *(a.d.h.v. een foto en dient overeen te komen met aangifte ANWB)*,\
+                    \n**Vraag ook naar de roepnummer van de ANWB'er**, *(ter verificatie voor de aangifte van de ANWB'er)*,\
+                    \n**Dezelfde gegevens van het andere voertuig en de chauffeur zoals de klant**, *(indien geen eenzijdig ongeval)*\
+                    \n\
+                    \nNu is het aan jou om te gaan kijken of er een E-MW (externe medewerker) aangifte heeft gedaan van de reparatie.\
+                    \nIndien er na een week na het ongeluk nog geen aangifte is gebeurd kom het schadegeval te vervallen.\
+                    \nIs er wel een aangifte gebeurd? Dan ga je kijken wie er in fout is. Jij geeft gewoon aan in je ticket wie er in fout is als volgt:\
+                    \n\
+                    \n```Beste\
+                    \n\
+                    \nWij hebben geconstateerd dat u (of 'de andere partij') in fout was.\
+                    \n(indien de persoon zelf schuldig word bevonden) Hierbij willen wij u ook op de hoogte stellen van een verhoging van uw bonusmalus met 1 (voor uw genoemde producten, dus bijvoorbeeld) voor zowel uw BA verzekering als uw (full) omnium van uw (type) oldtimer met kenteken '00 AAA 0' met als reden (vul reden in).\
+                    \n\
+                    \nIk hoop u hiermee voldoende te hebben geïnformeerd.\
+                    \n\
+                    \nMet vriendelijke groeten,\
+                    \nJe naam\
+                    \nVerzekeringsagent```\
+                    \n\
+                    \nMocht de klant daar tegen in bezwaar gaan, dan ``!lift`` je de ticket en dan neemt een manager het over.\
+                    \nAls de manager van mening is dat je goed hebt gehandeld word je uitbetaald.",
+                "author": "",
+                "items": {}
+            }
+
+            embed = await return_embed(dict_, color=0xffffff)
+            await self.bot.schoollevelone.send(embed=embed)
+
+            # E-MW school channel
+            # self.bot.schoolemw
+            # ======================================= #
+            dict_ = {
+                "url": "",
+                "title": "Verkoop-ticket",
+                "description": f"Beste {self.bot.agentrole.mention},\n\
+                    \n\
+                    Van harte welkom!\
+                    \n\
+                    \nHet enige wat wij van jou verwachten is dat je een verslag maakt \
+                    wanneer iemand zich aanmeld met schade en je hebt geconstateerd \
+                    dat de persoon in het bezit is van een BA of omnium verzekering. \
+                    \n\
+                    \n__**BA:**__\
+                    \nHet andere voertuig vergoeden wij, inclusief RWS en takelwagen.\
+                    \nHet niet verzekerde voertuig krijgt een factuur.\
+                    \n\
+                    \n__**Omnium:**__\
+                    \nHet verzekerde voertuig vergoeden wij, exclusief RWS en takelwagen.\
+                    \nHet andere voertuig krijgt een factuur.\
+                    \n\
+                    \n__**Full Omnium:**__\
+                    \nHet verzekerde voertuig vergoeden wij, inclusief RWS en takelwagen.\
+                    \nHet andere voertuig krijgt een factuur.\
+                    \n\
+                    \n__**Handelsverzekering:**__\
+                    \nHet verzekerde voertuig vergoeden wij, inclusief RWS en takelwagen.\
+                    \nHet andere voertuig vergoeden wij, inclusief RWS en takelwagen.\
+                    \n\
+                    \n__**Zorgverzekering:**__\
+                    \nDe verzekerde zijn medische kosten worden vergoed.\
+                    \nKosten van niet-verzekerden kunnen verhaald worden bij een aanrijding \
+                    \nals de politie de BA verzekerde schuldig achten.\
+                    \n\
+                    \n__**De aangifte:**__\
+                    \nJe komt aan bij je melding en je stelt vast dat de andere partij verzekerd is.\
+                    \nJe maakt een ticket aan, daarin meld je het volgende:\
+                    \n**Wie jij bent**, *(naam, roepnummer, job)*,\
+                    \n**Om welk voertuig en/of persoon het gaat**, *(nummerplaat, naam)*,\
+                    \n**De andere partij**, *(nummerplaat, naam)*,\
+                    \n**Locatie**, *(met foto, gps bij ongeluk)*\
+                    \n\
+                    \nDe verloningen:\
+                    \n**Per aangifte: €250,00**\
+                    \n*Uitbetalingen gebeuren per week.*\
+                    \n\
+                    \nMochten er klachten zijn kan je bij {self.bot.superrole.mention}, {self.bot.boss.mention} of \
+                    {self.bot.jmrole.mention} terecht.\
+                    \n\
+                    \nWe wensen jou veel succes met je nieuwe baan!\
+                    \n\
+                    Met vriendelijke groeten,\
+                    \n{self.bot.user.mention}\
+                    \nSecretaresse\
+                    \n\
+                    \n{self.bot.boss.mention}\
+                    \n{self.bot.directorrole.mention}",
+                "author": "",
+                "items": {}
+            }
+
+            embed = await return_embed(dict_, color=0xffffff)
+            await self.bot.schoolemw.send(embed=embed)
+
     @commands.command(aliases=['waarschuw'])
     async def warn(self, ctx, member: discord.Member, *, reason="geen reden opgegeven"):
-        if general.check_perms('administrative', ctx):
+        if general.check_perms('administrative', ctx.author):
             dict_ = {
                 "url": "",
                 "title": "Waarschuwing gelogd",
@@ -385,7 +705,7 @@ class administration(commands.Cog):
 
     @commands.command(aliases=['stamp'])
     async def kick(self, ctx, member: discord.Member, *, reason="geen reden opgegeven"):
-        if general.check_perms('administrative', ctx):
+        if general.check_perms('administrative', ctx.author):
             dict_ = {
                 "url": "",
                 "title": "Kick gelogd",
@@ -421,7 +741,7 @@ class administration(commands.Cog):
 
     @commands.command(aliases=['banhamer'])
     async def ban(self, ctx, member: discord.Member, *, reason="geen reden opgegeven"):
-        if general.check_perms('administrative', ctx):
+        if general.check_perms('administrative', ctx.author) and not general.check_perms('administrative', member):
             dict_ = {
                 "url": "",
                 "title": "Ban gelogd",
@@ -457,7 +777,7 @@ class administration(commands.Cog):
 
     @commands.command()
     async def unban(self, ctx, member, *, reason="geen reden opgegeven"):
-        if general.check_perms('administrative', ctx):
+        if general.check_perms('administrative', ctx.author):
             banned_users = await ctx.guild.bans()
             member_name, member_discriminator = member.split('#')
 
@@ -501,19 +821,19 @@ class administration(commands.Cog):
 
     @commands.command()
     async def purge(self, ctx, qty: int):
-        if general.check_perms('administrative', ctx):
+        if general.check_perms('administrative', ctx.author):
             await ctx.channel.purge(limit=(qty+1))
 
     @commands.command(aliases=['dc'])
     async def disconnect(self, ctx):
-        if general.check_perms('dev', ctx):
+        if general.check_perms('dev', ctx.author):
             bot_speaks(self.bot, 'Ik sluit af.')
             await ctx.self.close()
             os.kill(os.getppid(), signal.SIGHUP)
 
     @commands.command(aliases=['reload'])
     async def reload_specific_cog_command(self, ctx, arg: str):        
-        if general.check_perms('dev', ctx):
+        if general.check_perms('dev', ctx.author):
             await ctx.send(f'{ctx.author.mention}, ik ga proberen om {arg} te reloaden.', delete_after=10)
             cog = None
 
@@ -530,7 +850,7 @@ class administration(commands.Cog):
         member = None
         role = None
         run = True
-        if general.check_perms('administrative', ctx):
+        if general.check_perms('administrative', ctx.author):
             if isinstance(param_one, discord.Member):
                 member = param_one
             elif isinstance(param_one, discord.Role):
@@ -563,7 +883,7 @@ class administration(commands.Cog):
         member = None
         role = None
         run = True
-        if general.check_perms('administrative', ctx):
+        if general.check_perms('administrative', ctx.author):
             if isinstance(param_one, discord.Member):
                 member = param_one
             elif isinstance(param_one, discord.Role):

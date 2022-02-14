@@ -75,7 +75,7 @@ class clients(commands.Cog):
 
     @commands.command()
     async def klant(self, ctx, type: str, *, args = None):
-        if general.check_perms('basic', ctx):
+        if general.check_perms('basic', ctx.author):
             klantdict_ = klanttemplatedict_
             load_dotenv()
             mydb = mysql.connector.connect(
