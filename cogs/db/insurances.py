@@ -362,7 +362,7 @@ class insurances(commands.Cog):
                         subcattmp = 2
                     
                     if not subcattmp == None:
-                        sql = "SELECT * FROM `tbl_insurable_types` WHERE `subcategoryID` LIKE %s;"
+                        sql = "SELECT * FROM `tbl_insurable_types` WHERE `subcategoryID` LIKE '%s';"
                         mycursor = mydb.cursor()
                         mycursor.execute(sql, (subcattmp,))
                         myresult = mycursor.fetchall()
@@ -399,11 +399,53 @@ class insurances(commands.Cog):
                             await logs.make_embed(self, ctx, dict_)
                             message = await self.bot.wait_for('message', timeout=120.0, check=checkmessage)
                             answersub = message.content
+                            naamkortbool = False
+                            naamlangbool = False
+                            
+                            for item in naamkort:
+                                if item == answersub:
+                                    naamkortbool = True
 
-                            if answersub in naamkort or answersub in naamlang:                                
+                            for item in naamlang:
+                                if item == answersub:
+                                    naamlangbool = True
+
+                            if naamkortbool or naamlangbool:
                                 # Selecteer opgegeven ding in db
+                                sql = '''SELECT 
+                                `tbl_insurance_types`.`id`,
+                                `tbl_categories`.`short_name` as 'verzekeringsnaamkort',
+                                `tbl_categories`.`name` as 'verzekeringsnaam',
+                                `tbl_insurable_types`.`short_name` as 'verzekerbaartypekort',
+                                `tbl_insurable_types`.`name` as 'verzekerbaartype',
+                                `tbl_sub_categories`.`short_name` as 'subcategorienaam',
+                                `tbl_insurance_types`.`price` as 'minmp',
+                                `tbl_insurance_types`.`price` as 'minprijs',
+                                `tbl_insurance_types`.`min_mp` as 'minmp',
+                                `tbl_insurance_types`.`default_mp` as 'standaardmp'                                
+                                FROM `tbl_insurance_types`
+                                    INNER JOIN
+                                    `tbl_categories`
+                                    ON `tbl_insurance_types`.`categoryID` = `tbl_categories`.`id`
+                                    INNER JOIN
+                                    `tbl_insurable_types`
+                                    ON `tbl_insurance_types`.`insurable_typeID` = `tbl_insurable_types`.`id`
+                                    INNER JOIN
+                                    `tbl_sub_categories`
+                                    ON `tbl_insurable_types`.`subcategoryID` = `tbl_sub_categories`.`id`'''
+
+                                if naamkortbool:
+                                    sql += " WHERE `tbl_insurable_types`.`short_name` LIKE '%s' AND `tbl_categories`.`short_name`;"
+
+                                if naamlangbool:
+                                    sql += " WHERE `tbl_insurable_types`.`name` LIKE '%s';"
+
+                                mycursor = mydb.cursor()
+                                mycursor.execute(sql, (answersub,))
+                                myresult = mycursor.fetchall()
+
                                 # Haal multiplier, prijs op
-                                # 
+                                
 
                                 if subcattmp == 2:
                                     # Vraag ook nummerplaat

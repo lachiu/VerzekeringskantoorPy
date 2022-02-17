@@ -480,8 +480,6 @@ class clients(commands.Cog):
                     try:
                         keuze = back_end_namen[keuze]
                     except:
-                        pass
-                    else:
                         try:
                             if front_end_namen[keuze]:
                                 keuze = keuze

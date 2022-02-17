@@ -35,7 +35,7 @@ class tickets(commands.Cog):
                 database=os.getenv('DB_NAME')
             )
 
-            sql = "SELECT count(*) FROM `tbl_tickets` WHERE `client_discordid` LIKE %s;"
+            sql = "SELECT COUNT(*) FROM `tbl_tickets` WHERE `client_discordid` LIKE %s;"
             mycursor = mydb.cursor()
             mycursor.execute(sql, (ctx.author.id,))
             myresult = mycursor.fetchone()
@@ -51,18 +51,14 @@ class tickets(commands.Cog):
                 next_category_id = general.get_next_category(current_category)
             except ValueError:
                 await ctx.send(f'{ctx.author.mention}, dat is niet mogelijk in dit kanaal.', delete_after=10)
-                return
             else:
                 next_category = ctx.guild.get_channel(next_category_id)            
-                await current_channel.edit(category = next_category)                
+                await current_channel.edit(category = next_category)
 
     @commands.command(aliases=['zekervanmij'])
-    async def forceclaim(self, ctx, member: discord.Member = None, target: discord.Member = None):
+    async def forceclaim(self, ctx, target: discord.Member = None):
         if general.check_perms('administrative', ctx.author):
             if general.isTicket(ctx.channel.category_id):
-                if member == None:
-                    member = ctx
-
                 load_dotenv()
                 
                 mydb = mysql.connector.connect(
@@ -152,11 +148,9 @@ class tickets(commands.Cog):
             await ctx.send(f"{ctx.author.mention}, u heeft niet voldoende permissies om dat te doen.")
 
     @commands.command(aliases=['vanmij'])
-    async def claim(self, ctx, member: discord.Member = None):
+    async def claim(self, ctx):
         if general.check_perms('basic', ctx.author):
             if general.isTicket(ctx.channel.category_id):
-                if member == None:
-                    member = ctx
 
                 load_dotenv()
                 mydb = mysql.connector.connect(

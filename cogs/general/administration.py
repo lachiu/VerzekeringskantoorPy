@@ -368,7 +368,7 @@ class administration(commands.Cog):
                 "author": "",
                 "items": {}
             }
-                
+
             embed = await return_embed(dict_)        
             await self.bot.ticketchannel.send(embed=embed, view=ChannelButton(self.bot))
 
@@ -384,7 +384,157 @@ class administration(commands.Cog):
             # Document channel
             # self.bot.schooldocs
             # ======================================= #
+            dict_ = {
+                "url": "",
+                "title": "De klantcommands",
+                "description": f"__**!klant:**__\
+                    \n**nieuw** (add, new, toevoegen)\
+                    \n*Optionele parameters:*\
+                    \nFivem licentie (of 'geen'/'leeg'),\
+                    \nDiscord id (tag, id of 'leeg'),\
+                    \nVoornaam (in rp),\
+                    \nAchternaam (in rp),\
+                    \nGeboortedatum (in rp),\
+                    \nRijbewijs A (0 of 1),\
+                    \nRijbewijs B (0 of 1),\
+                    \nRijbewijs C (0 of 1),\
+                    \nVliegbrevet (0 of 1),\
+                    \nVaarbewijs (0 of 1)\
+                    \n\
+                    \n**edit** (aanpassen, pasaan, verander)\
+                    \n*Optionele parameters:*\
+                    \nDiscord id (tag, id of 'leeg'),\
+                    \nKeuze (een van bovenstaande gegevens of 'geen'),\
+                    \nNieuwe waarde (moet voldoen aan de vereiste van hierboven)\
+                    \n\
+                    \n**zie** (bekijken, see)\
+                    \n*Optionele parameters:*\
+                    \nDiscord id (tag, id of 'leeg')",
+                "author": "",
+                "items": {}
+            }
 
+            embed = await return_embed(dict_, color=0xffffff)
+            await self.bot.schooldocs.send(embed=embed)
+
+            dict_ = {
+                "url": "",
+                "title": "De werknemercommands",
+                "description": f"__**!werknemer:**__\
+                    \n**nieuw** (add, new, toevoegen)\
+                    \n*Optionele parameters:*\
+                    \nFivem licentie (of 'geen'/'leeg'),\
+                    \nDiscord id (tag, id of 'leeg'),\
+                    \nVoornaam (in rp),\
+                    \nAchternaam (in rp),\
+                    \nWachtwoord ('geen'),\
+                    \nGeboortedatum (in rp),\
+                    \nIngeschakeld (1)\
+                    \n\
+                    \n**edit** (aanpassen, pasaan, verander)\
+                    \n*Optionele parameters:*\
+                    \nDiscord id (tag, id of 'leeg'),\
+                    \nKeuze (een van bovenstaande gegevens of 'geen'),\
+                    \nNieuwe waarde (moet voldoen aan de vereiste van hierboven)\
+                    \n\
+                    \n**zie** (bekijken, see)\
+                    \n*Optionele parameters:*\
+                    \nDiscord id (tag, id of 'leeg')",
+                "author": "",
+                "items": {}
+            }
+
+            embed = await return_embed(dict_, color=0xffffff)
+            await self.bot.schooldocs.send(embed=embed)
+
+            dict_ = {
+                "url": "",
+                "title": "De verzekercommands", # kloppen nog niet
+                "description": f"__**!werknemer:**__\
+                    \n**nieuw** (add, new, toevoegen)\
+                    \n*Optionele parameters:*\
+                    \nFivem licentie (of 'geen'/'leeg'),\
+                    \nDiscord id (tag, id of 'leeg'),\
+                    \nVoornaam (in rp),\
+                    \nAchternaam (in rp),\
+                    \nWachtwoord ('geen'),\
+                    \nGeboortedatum (in rp),\
+                    \nIngeschakeld (1)\
+                    \n\
+                    \n**edit** (aanpassen, pasaan, verander)\
+                    \n*Optionele parameters:*\
+                    \nDiscord id (tag, id of 'leeg'),\
+                    \nKeuze (een van bovenstaande gegevens of 'geen'),\
+                    \nNieuwe waarde (moet voldoen aan de vereiste van hierboven)\
+                    \n\
+                    \n**zie** (bekijken, see)\
+                    \n*Optionele parameters:*\
+                    \nDiscord id (tag, id of 'leeg')",
+                "author": "",
+                "items": {}
+            }
+
+            embed = await return_embed(dict_, color=0xffffff)
+            await self.bot.schooldocs.send(embed=embed)
+
+            dict_ = {
+                "url": "",
+                "title": "Algemene commands",
+                "description": f"__**!kaart:**__\
+                    *Laat een bericht zien met uitleg over elk verzekeringstype.\
+                    *Mogelijke opties zijn **ba**, **omnium**, **hv** en **zv**.*\
+                    \n\
+                    \n__**!geef**__\
+                    \nRol (tag, id)\
+                    \n\
+                    \n__**!neem**__\
+                    \nRol (tag, id)\
+                    \n\
+                    \n__**!repairkit**__\
+                    \n**neem** (take)\
+                    \nHoeveelheid (aantal),\
+                    \nReden (verplicht)\
+                    \n\
+                    \n**add** (voegtoe, toevoegen)\
+                    \nHoeveelheid (aantal),\
+                    \nReden (verplicht)\
+                    \n\
+                    \n**zie** (see, huidig, current)\
+                    \n\
+                    \n__**!kluis**__\
+                    \n**neem** (take)\
+                    \nHoeveelheid (aantal),\
+                    \nReden (verplicht)\
+                    \n\
+                    \n**add** (voegtoe, toevoegen)\
+                    \nHoeveelheid (aantal),\
+                    \nReden (verplicht)\
+                    \n\
+                    \n**zie** (see, huidig, current)\
+                    ",
+                "author": "",
+                "items": {}
+            }
+
+            embed = await return_embed(dict_, color=0xffffff)
+            await self.bot.schooldocs.send(embed=embed)            
+
+            dict_ = {
+                "url": "",
+                "title": "De verloningen",
+                "description": f"**Per behandeld lvl-3 ticket: €1.500,00**,\
+                    \n**Per behandeld lvl-2 ticket: €1.000,00**,\
+                    \n**Per behandeld lvl-1 ticket: €500,00**,\
+                    \n**Per aangeworven medewerker: €500,00**,\
+                    \n**Per aangeworven klant: €500,00**,\
+                    \n**Per verkochte verzekering: 10%**\
+                    \n*Uitbetalingen gebeuren per week.*",
+                "author": "",
+                "items": {}
+            }
+
+            embed = await return_embed(dict_, color=0xffffff)
+            await self.bot.schooldocs.send(embed=embed)
 
             # lvl-3 school channel
             # self.bot.schoollevelthree
