@@ -1,4 +1,3 @@
-from multiprocessing.connection import Client
 import os
 import yaml
 import logs
@@ -172,7 +171,7 @@ class insurances(commands.Cog):
             `tbl_clients`.`licenseC` as 'rijbewijs C',
             `tbl_clients`.`flight` as 'vliegbrevet',
             `tbl_clients`.`vaarbewijs` as 'vaarbewijs'
-            WHERE `tbl_clients`.`discordID` LIKE '%s' LIMIT 1;'''            
+            WHERE `tbl_clients`.`discordID` LIKE '%s' LIMIT 1;''' 
             mycursor = mydb.cursor()
             mycursor.execute(sql, (discordid,))
             myresult = mycursor.fetchall()
