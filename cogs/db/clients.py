@@ -551,5 +551,5 @@ class clients(commands.Cog):
                 except:
                     pass
 
-def setup(bot):
-    bot.add_cog(clients(bot))
+async def setup(bot):
+    await bot.add_cog(clients(bot))

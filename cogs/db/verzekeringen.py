@@ -94,9 +94,8 @@ class Verzekerde():
         }
             
         self.insurances[1][nummerplaat]["verzekeringen"][type] = verzekeringdict
-}
 
-class insurances(commands.Cog):
+class verzekeringen(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
@@ -400,6 +399,7 @@ class insurances(commands.Cog):
                     # Geweigerd
                         # Vraag wat gewijzigd moet worden
                         # Repeat
+                print()
 
             if commandtype == "bekijken" or commandtype == "zie" or commandtype == "see":
                 #if general.check_perms('administrative', ctx.author):
@@ -416,5 +416,5 @@ class insurances(commands.Cog):
             if commandtype == "ziehuidig":
                 print()
 
-def setup(bot):
-    bot.add_cog(insurances(bot))
+async def setup(bot):
+    await bot.add_cog(verzekeringen(bot))

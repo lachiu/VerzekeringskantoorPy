@@ -38,5 +38,5 @@ class fun(commands.Cog):
             await ctx.send(f"Startdag: {startDate}")
             await ctx.send(f"Einddag: {endDate}")
         
-def setup(bot):
-    bot.add_cog(fun(bot))
+async def setup(bot):
+    await bot.add_cog(fun(bot))

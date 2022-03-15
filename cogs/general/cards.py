@@ -84,5 +84,5 @@ class cards(commands.Cog):
             else:
                 await ctx.send(f"{ctx.author.mention}, u dient dit command uit te voeren in een ticket.", delete_after=10)
 
-def setup(bot):
-    bot.add_cog(cards(bot))
+async def setup(bot):
+    await bot.add_cog(cards(bot))

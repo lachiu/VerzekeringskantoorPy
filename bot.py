@@ -26,13 +26,12 @@ for subdir in dirs:
         if item.endswith(".py"):
             cogs[item[:-3]] = f"cogs.{subdir}.{item[:-3]}"
 
-#print(f"Inhoud van cogs: {cogs}")
-for key, item in cogs.items():
-    #print(f"{key} - {item}")
-    bot.load_extension(item)    
-
 @bot.event
 async def on_ready():
+    #print(f"Inhoud van cogs: {cogs}")
+    for key, item in cogs.items():
+        #print(f"{key} - {item}")
+        await bot.load_extension(item) 
     bot_speaks(bot, f'Ik ben helemaal klaar om aan de slag te gaan als {bot.user.name}.')
     vkgGuild = bot.get_guild(875098573262438420)
     bot.coglist = cogs

@@ -590,6 +590,7 @@ class administration(commands.Cog):
                     Van harte welkom!\
                     \n\
                     \nVolgende zaken zitten in jouw takenpakket:\
+                    \n**Wekelijks updaten van de supervisors**,\
                     \n**Klachten die geëscaleerd werden behandelen**,\
                     \n**Verzekeringsagenten opleiden**,\
                     \n**Overig lvl-1 takenpakket**\
@@ -647,6 +648,7 @@ class administration(commands.Cog):
                     Van harte welkom!\
                     \n\
                     \nVolgende zaken zitten in jouw takenpakket:\
+                    \n**Wekelijks updaten van de managers**,\
                     \n**Verzekeringen verkopen**,\
                     \n**Aangiftes behandelen**,\
                     \n**Problemen verhelpen**,\
@@ -758,8 +760,8 @@ class administration(commands.Cog):
             # ======================================= #
             dict_ = {
                 "url": "",
-                "title": "Verkoop-ticket",
-                "description": f"Beste {self.bot.agentrole.mention},\n\
+                "title": "Welkom bij VKG",
+                "description": f"Beste {self.bot.emwrole.mention},\n\
                     \n\
                     Van harte welkom!\
                     \n\
@@ -794,13 +796,16 @@ class administration(commands.Cog):
                     \n**Wie jij bent**, *(naam, roepnummer, job)*,\
                     \n**Om welk voertuig en/of persoon het gaat**, *(nummerplaat, naam)*,\
                     \n**De andere partij**, *(nummerplaat, naam)*,\
+                    \n**Beschrijving**, *(jouw vaststelling(en))*\
                     \n**Locatie**, *(met foto, gps bij ongeluk)*\
                     \n\
                     \nDe verloningen:\
-                    \n**Per aangifte: €250,00**\
+                    \n**Per correcte aangifte: €250,00**\
+                    \n**Per analyse: €350,00** (auto ongeluk)\
+                    \n**Per analyse: €500,00**, *(vliegtuig en boot ongeluk)*\
                     \n*Uitbetalingen gebeuren per week.*\
                     \n\
-                    \nMochten er klachten zijn kan je bij {self.bot.superrole.mention}, {self.bot.boss.mention} of \
+                    \nMochten er klachten zijn kan je bij {self.bot.managerrole.mention}, {self.bot.boss.mention} of \
                     {self.bot.jmrole.mention} terecht.\
                     \n\
                     \nWe wensen jou veel succes met je nieuwe baan!\
@@ -1061,5 +1066,5 @@ class administration(commands.Cog):
         else:
             await ctx.send(f'{ctx.author.mention}, u heeft niet voldoende permissies hiervoor.', delete_after=10)
         
-def setup(bot):
-    bot.add_cog(administration(bot))
+async def setup(bot):
+    await bot.add_cog(administration(bot))

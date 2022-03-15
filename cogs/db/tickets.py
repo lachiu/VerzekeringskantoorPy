@@ -522,5 +522,5 @@ class tickets(commands.Cog):
         else:
             await ctx.send(f"{ctx.author.mention}, jammer genoeg heeft u niet genoeg permissies.", delete_after=10)
       
-def setup(bot):
-    bot.add_cog(tickets(bot))
+async def setup(bot):
+    await bot.add_cog(tickets(bot))

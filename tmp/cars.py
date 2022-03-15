@@ -987,5 +987,5 @@ class cars(commands.Cog):
         else:
             await ctx.send(f'{ctx.author.mention}, u bezit helaas niet over de permissies om dit merk aan te passen.\nGelieve contact op te nemen met de ACG manager of directeur indien u van mening bent dat dit een fout is.', delete_after=5)
 
-def setup(bot):
-    bot.add_cog(cars(bot))
+async def setup(bot):
+    await bot.add_cog(cars(bot))

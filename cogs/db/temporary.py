@@ -80,6 +80,8 @@ class temporary(commands.Cog):
             if verifieerAntwoord(type, input):
                 return input
 
+        
+
         async def verifieerAntwoord(type, input):
             tmpbool = False
             if type == "klant":
@@ -146,5 +148,5 @@ class temporary(commands.Cog):
             if type in verlengList:
                 print()
 
-def setup(bot):
-    bot.add_cog(temporary(bot))
+async def setup(bot):
+    await bot.add_cog(temporary(bot))

@@ -493,5 +493,5 @@ class insurances(commands.Cog):
             if commandtype == "ziehuidig":
                 print()
 
-def setup(bot):
-    bot.add_cog(insurances(bot))
+async def setup(bot):
+    await bot.add_cog(insurances(bot))

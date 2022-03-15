@@ -288,5 +288,5 @@ class economy(commands.Cog):
                 await ctx.send(embed=embed, delete_after=20)
 
 
-def setup(bot):
-    bot.add_cog(economy(bot))
+async def setup(bot):
+    await bot.add_cog(economy(bot))
