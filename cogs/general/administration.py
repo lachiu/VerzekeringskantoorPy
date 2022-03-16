@@ -5,6 +5,7 @@ import typing
 import discord
 import general
 import mysql.connector
+from cogs.db.tickets import ChannelButton
 from logs import return_embed
 from logs import make_embed
 from logs import make_log
@@ -12,150 +13,6 @@ from logs import make_discord_log
 from dotenv.main import load_dotenv
 from discord.ext import commands
 from general_bot import bot_speaks
-
-typebuttons = {
-    "probleem": "❗",
-    "vraag": "❓",
-    "aanvraag": "📋",
-    "claim": "😱"
-}
-
-class ChannelButton(discord.ui.View):
-    def __init__(self, bot):
-        super().__init__(timeout=None)
-        self.value = None
-        self.bot = bot
-
-    async def button_action(self, button: discord.ui.Button, interaction: discord.Interaction, tickettype):
-        load_dotenv()
-        mydb = mysql.connector.connect(
-            host=os.getenv('DB_SERVERNAME'),
-            user=os.getenv('DB_USERNAME'),
-            password=os.getenv('DB_PASSWORD'),
-            database=os.getenv('DB_NAME')
-        )
-
-        user = interaction.user
-        mycursor = mydb.cursor(buffered=True)
-        sql = "SELECT count(*) FROM `tbl_tickets` WHERE `agent_discordid` IS NULL AND `client_discordid` LIKE %s;"
-        mycursor.execute(sql, (user.id,))
-        myresult = mycursor.fetchone()
-        aantal_tickets = 0
-
-        if not myresult == None and not myresult == 0:
-            aantal_tickets = myresult[0]        
-
-        if aantal_tickets < 5:
-            sql = "SELECT MAX(`id`) FROM `tbl_tickets`;"
-            mycursor.execute(sql)
-            myresult = mycursor.fetchone()
-            
-            if myresult[0] != None:
-                number = myresult[0] + 1
-            else:
-                number = 1
-
-            icon = typebuttons[tickettype]
-            name = f"{icon}-ticket-{number}"
-            overwrite = {
-                user: discord.PermissionOverwrite()
-            }
-
-            category = discord.utils.get(interaction.guild.categories, id=918437790025392138)
-            channel = await interaction.guild.create_text_channel(name, category=category)
-            await channel.set_permissions(interaction.user, read_message_history=True, view_channel=True, send_messages=True)
-            try:
-                dict_ = {
-                    "url": "",
-                    "title": "Er werd een ticket geopend",
-                    "description": f"{user.mention}, ik heb een ticket geopend voor u.\
-                        \nU word zo spoedig mogelijk geholpen door een medewerker.\
-                        \nGelieve even geduldig af te wachten. Alvast bedankt",
-                    "author": "",
-                    "items": {}
-                }
-
-                dmchannel = await user.create_dm()
-                embed = await return_embed(dict_)
-                await channel.send(embed=embed)
-
-                dict_ = {
-                    "url": "",
-                    "title": "Er werd een ticket geopend",
-                    "description": f"{user.mention}, ik heb een ticket geopend voor u.\
-                        \nU word zo spoedig mogelijk geholpen door een medewerker.\
-                        \nGelieve even geduldig af te wachten. Alvast bedankt\
-                        \n\
-                        \n[Klik hier om naar uw ticket te gaan.](https://discord.com/channels/875098573262438420/{channel.id})",
-                    "author": "",
-                    "items": {}
-                }
-
-                embed = await return_embed(dict_)
-                await dmchannel.send(embed=embed)
-                
-            except:
-                pass
-
-            try:
-                naam = tickettype
-                dict_ = {
-                    "url": "",
-                    "title": "Helpdesk",
-                    "description": f"{user.mention}, gelieve alvast het volgende klaar te houden:\
-                        \n- uw klantnummer (indien beschikbaar)\
-                        \n- uw identiteitskaart\n- uw rijbewijs\
-                        \n\
-                        \nU mag ook al vast uw {naam} plaatsen.\
-                        \n\
-                        \nAlvast bedankt voor uw geduld en onze excuses indien uw enige hinder ervaart\
-                        in de tussentijd.\
-                        \nU word zo snel mogelijk verder geholpen.",
-                    "author": "",
-                    "items": {}
-                }
-
-                dmchannel = await user.create_dm()
-                embed = await return_embed(dict_)
-                await dmchannel.send(embed=embed)
-                await channel.send(embed=embed)
-            except:
-                pass
-
-            sql = "INSERT INTO `tbl_tickets`(`id`, `channelid`, `agent_discordid`, `client_discordid`, `reviewid`) VALUES (NULL, %s, %s, %s, %s);"
-            mycursor.execute(sql, (channel.id, None, user.id, None))
-            mydb.commit()
-        else:
-            try:
-                dict_ = {
-                    "url": "",
-                    "title": "Er ging iets mis",
-                    "description": f"{user.mention}, u heeft momenteel al te veel tickets open staan.",
-                    "author": "",
-                    "items": {}
-                }
-
-                dmchannel = await user.create_dm()
-                embed = await return_embed(dict_)
-                await dmchannel.send(embed=embed)
-            except:
-                pass
-
-    @discord.ui.button(label="❗ Ik heb een probleem ❗", style=discord.ButtonStyle.danger, custom_id="channelbutton:probleem")
-    async def probleem(self, button: discord.ui.Button, interaction: discord.Interaction):
-        await self.button_action(button, interaction, "probleem")
-    
-    @discord.ui.button(label="❓ Ik heb een vraag ❓", style=discord.ButtonStyle.danger, custom_id='channelbutton:vraag')
-    async def vraag(self, button: discord.ui.Button, interaction: discord.Interaction):
-        await self.button_action(button, interaction, "vraag")
-
-    @discord.ui.button(label="📋 Ik wil graag product x 📋", style=discord.ButtonStyle.danger, custom_id='channelbutton:aanvraag')
-    async def aanvraag(self, button: discord.ui.Button, interaction: discord.Interaction):
-        await self.button_action(button, interaction, "aanvraag")
-
-    @discord.ui.button(label="😱 Ik heb een ongeluk gehad 😱", style=discord.ButtonStyle.danger, custom_id='channelbutton:claim')
-    async def claim(self, button: discord.ui.Button, interaction: discord.Interaction):
-        await self.button_action(button, interaction, "claim")
 
 class administration(commands.Cog):
     def __init__(self, bot):
@@ -203,7 +60,7 @@ class administration(commands.Cog):
         if general.check_perms('dev', ctx.author):
             vkgGuild = self.bot.get_guild(875098573262438420)
             await self.bot.ruleschannel.purge(limit=10, bulk=False)
-            jobmanagers = discord.utils.get(vkgGuild.roles, id=general.return_role_id("job manager"))
+            jobmanagers = discord.utils.get(vkgGuild.roles, id=general.return_role_id("groningse inspectie"))
             dict_ = {
                 "url": "",
                 "title": "Algemeen | Lid 1",
@@ -765,9 +622,16 @@ class administration(commands.Cog):
                     \n\
                     Van harte welkom!\
                     \n\
-                    \nHet enige wat wij van jou verwachten is dat je een verslag maakt \
+                    \n__**{self.bot.anwbrole.mention}, {self.bot.amburole.mention}:**__\
+                    \nWij verwachten van jou dat je een verslag maakt \
                     wanneer iemand zich aanmeld met schade en je hebt geconstateerd \
                     dat de persoon in het bezit is van een BA of omnium verzekering. \
+                    \nWat er in de aangifte moet staan vind je als voorlaatste puntje terug.\
+                    \n\
+                    \n__**{self.bot.politierole.mention}, {self.bot.vsgrole.mention}:**__\
+                    \nWij verwachten van jou dat je een analyse maakt van een gegeven situatie.\
+                    \nHier dien je objectief naar te kijken en een verdict te vellen, nl. wie er schuldig is.\
+                    \nJij bepaalt dus wie er in fout is. Verklaar ook in je verslag waarom dat zo is.\
                     \n\
                     \n__**BA:**__\
                     \nHet andere voertuig vergoeden wij, inclusief RWS en takelwagen.\
@@ -823,6 +687,27 @@ class administration(commands.Cog):
             embed = await return_embed(dict_, color=0xffffff)
             await self.bot.schoolemw.send(embed=embed)
 
+    @commands.command()
+    async def roletemplate(self, ctx):
+        if general.check_perms('dev', ctx.author):
+            dict_ = {
+                "url": "",
+                "title": "Rol aanvragen",
+                "description": f"Beste werknemer,\n\
+                    \nGelieve je te houden aan de template hieronder.\n\
+                    \n\
+                    Met vriendelijke groeten,\
+                    \n{self.bot.user.mention}\
+                    \nSecretaresse",
+                "author": "",
+                "items": {}
+            }
+                        
+            bali = self.bot.get_channel(875098573547646994)
+            embed = await return_embed(dict_, color=0xffffff)
+            await bali.send(embed=embed)
+            await bali.send("```Naam:\nRol:```")
+            
     @commands.command(aliases=['waarschuw'])
     async def warn(self, ctx, member: discord.Member, *, reason="geen reden opgegeven"):
         if general.check_perms('administrative', ctx.author):
@@ -994,7 +879,7 @@ class administration(commands.Cog):
 
             if self.bot.coglist[arg]:
                 cog = self.bot.coglist[arg]
-                self.bot.reload_extension(cog)
+                await self.bot.reload_extension(cog)
                 await ctx.send(f'{ctx.author.mention}, {arg} werd gereload.', delete_after=10)
                 
             else:

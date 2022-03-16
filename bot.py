@@ -1,7 +1,7 @@
 import os
 import discord
 import mysql.connector
-from cogs.general.administration import ChannelButton
+from cogs.db.tickets import ChannelButton
 from logs import return_embed
 from general_bot import bot_speaks
 from dotenv.main import load_dotenv
@@ -9,6 +9,7 @@ from discord.ext import commands
 
 intents = discord.Intents.default()
 intents.members = True
+intents.message_content = True
 bot = commands.Bot(command_prefix="!", intents=intents)
 
 dirs = []
@@ -60,6 +61,14 @@ async def on_ready():
     bot.clientrole = vkgGuild.get_role(918435180778258464)
     bot.emwrole = vkgGuild.get_role(938233602410434630)
     bot.mutedrole = vkgGuild.get_role(934945936185122876)    
+    bot.anwbrole = vkgGuild.get_role(952837567387164693)
+    bot.politierole = vkgGuild.get_role(952837478480506900)
+    bot.amburole = vkgGuild.get_role(952837530473078785)
+    bot.acgrole = vkgGuild.get_role(952837400718114816)
+    bot.as24role = vkgGuild.get_role(952837605945389066)
+    bot.pcarsrole = vkgGuild.get_role(952837653198430208)
+    bot.vsgrole = vkgGuild.get_role(952857453723275264)
+    bot.jjrole = vkgGuild.get_role(953562057066819585)
 
     bot.x = False
     if not bot.x:
