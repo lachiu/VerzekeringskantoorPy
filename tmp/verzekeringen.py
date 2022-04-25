@@ -187,7 +187,7 @@ class verzekeringen(commands.Cog):
                 "vliegbrevet": myresult[0][8],
                 "vaarbewijs": myresult[0][9]
             }
-            klant = Verzekerde(klantid, klantarray, insurances)
+            klant = Verzekerde(klantid, klantarray, None)
 
         async def VeranderWaarde(key, input):
             if key == "klant":
