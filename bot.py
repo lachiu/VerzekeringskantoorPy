@@ -32,8 +32,8 @@ async def on_ready():
     #print(f"Inhoud van cogs: {cogs}")
     for key, item in cogs.items():
         #print(f"{key} - {item}")
-        await bot.load_extension(item) 
-    bot_speaks(bot, f'Ik ben helemaal klaar om aan de slag te gaan als {bot.user.name}.')
+        await bot.load_extension(item)
+
     vkgGuild = bot.get_guild(875098573262438420)
     bot.coglist = cogs
     bot.boss = vkgGuild.get_member(154244184587501568)
@@ -69,11 +69,17 @@ async def on_ready():
     bot.pcarsrole = vkgGuild.get_role(952837653198430208)
     bot.vsgrole = vkgGuild.get_role(952857453723275264)
     bot.jjrole = vkgGuild.get_role(953562057066819585)
+    bot.insurancetypes = {}
+    bot.insurabletypes = {}
+    bot.categories = {}
+    bot.subcategories = {}
 
     bot.x = False
     if not bot.x:
         bot.add_view(ChannelButton(bot))
         bot.x = True
+    
+    bot_speaks(bot, f'Ik ben helemaal klaar om aan de slag te gaan als {bot.user.name}.')
 
 load_dotenv()
 bot.run(os.getenv('TOKEN'))
