@@ -3,7 +3,6 @@ import yaml
 import logs
 import json
 import random
-
 import asyncio
 import general
 import discord
@@ -43,11 +42,17 @@ class Insurances(commands.Cog):
         def checkMessage(m):
             return m.channel == ctx.channel and m.author == ctx.author
 
-        def getInsuranceTypes(insuranceID):
+        def getInsuranceTypes(type, identifierone, identifiertwo = None):
             # Insurance Type ophalen
-            sql = "SELECT * FROM `tbl_insurance_types` WHERE `id` LIKE '%s';"
             mycursor = mydb.cursor()
-            mycursor.execute(sql, (insuranceID,))
+            if cogs.functions.checkValue("isNumber", type) and type == 1:
+                sql = "SELECT * FROM `tbl_insurance_types` WHERE `id` LIKE '%s';"
+                mycursor.execute(sql, (identifierone,))
+
+            elif cogs.functions.checkValue("isNumber", type) and type == 2:
+                sql = "SELECT * FROM `tbl_insurance_types` WHERE `categoryID` = '%s' AND `insurable_typeID` = '%s';"                
+                mycursor.execute(sql, (identifierone, identifiertwo))
+            
             return mycursor.fetchall()
 
         def getInsurableTypes(insurableID):
@@ -210,15 +215,12 @@ class Insurances(commands.Cog):
                 insurance_typeID = None
                 multiplier = None
                 amount_paid = None
-                startDate = datetime.datetime.today().strftime('%d-%m-%y')
-                endDate = datetime.datetime.today() + datetime.timedelta(days=7)
-                endDate = endDate.strftime('%d-%m-%y')
+                startDate = datetime.datetime.today()                
                 HuidigeInsuranceType = None
                 HuidigeInsurableType = None
                 HuidigeCategory = None
                 HuidigeSubCategory = None
-                NieuweVerzekering = Insurance(self.bot, agent.discordID, client.discordID, insured, insurance_typeID, multiplier, amount_paid, startDate, endDate)
-                
+                licensePlate = None
                 # Check of args zijn ingevuld
                 # typeverzekering = 1
                 # duur = 2
@@ -226,7 +228,7 @@ class Insurances(commands.Cog):
                 if args and len(args) >= 2 and cogs.functions.checkValue("isNumber", int(args[1])):
                     NieuweVerzekering.insurance_typeID = args[1]                                     
                     
-                    myresult = getInsuranceTypes(NieuweVerzekering.insurance_typeID)
+                    myresult = getInsuranceTypes(1, NieuweVerzekering.insurance_typeID)
                     HuidigeInsuranceType = InsuranceType(myresult[0][0], myresult[0][1], myresult[0][2], myresult[0][3], myresult[0][4], myresult[0][5])
                     
                     myresult = getInsurableTypes(HuidigeInsuranceType.insurable_typeID)
@@ -268,24 +270,24 @@ class Insurances(commands.Cog):
                         try:
                             stuff = done.pop().result()
 
-                            if isinstance(stuff[0], discord.Reaction):
+                            if isinstance(stuff, tuple):
                                 if str(stuff[0].emoji) == '1️⃣':
                                     myresult = getSubCategories(1)
                                     HuidigeSubCategory = SubCategory(myresult[0][0], myresult[0][1], myresult[0][2])                                    
                                     
-                                if str(stuff[0].emoji) == '2️⃣':
+                                elif str(stuff[0].emoji) == '2️⃣':
                                     myresult = getSubCategories(2)
                                     HuidigeSubCategory = SubCategory(myresult[0][0], myresult[0][1], myresult[0][2])                                    
 
-                                if str(stuff[0].emoji) == '❌':                                    
+                                elif str(stuff[0].emoji) == '❌':                                    
                                     break
 
-                            if isinstance(stuff[0], discord.Message):
-                                if stuff.content == "pv" or stuff.content == "persoon":
+                            elif isinstance(stuff, discord.Message):
+                                if stuff.content.lower() == "pv" or stuff.content.lower() == "persoon":
                                     myresult = getSubCategories(1)
                                     HuidigeSubCategory = SubCategory(myresult[0][0], myresult[0][1], myresult[0][2])                                    
                             
-                                if stuff.content == "vv" or stuff.content == "vervoer":
+                                elif stuff.content.lower() == "vv" or stuff.content.lower() == "vervoer":
                                     myresult = getSubCategories(2)
                                     HuidigeSubCategory = SubCategory(myresult[0][0], myresult[0][1], myresult[0][2])                                    
 
@@ -306,35 +308,197 @@ class Insurances(commands.Cog):
                         except TimeoutError:
                             pass
                 
+                # Dynamisch nog op te halen
                 choices = {
                     1: [1, 2, 5],
                     2: [1, 3, 4]
                 }
 
-                choiceslist = choices[HuidigeCategory.id]
+                choiceslist = choices[HuidigeSubCategory.id]
                 listcategoryclasses = []
 
                 for item in choiceslist:
                     myresult = getCategories(item)
                     listcategoryclasses.append(Category(myresult[0][0], myresult[0][1], myresult[0][2]))
 
-                dict_ = {
-                    "url": "",
-                    "title": "Ik mis nog wat gegevens",
-                    "description": f"Om welke categorie gaat het?\
-                        \nReageer met de korte of lange naam.",
-                    "author": "",
-                    "items": {}
-                }
+                validValue = False
+                while not validValue:
+                    dict_ = {
+                        "url": "",
+                        "title": "Ik mis nog wat gegevens",
+                        "description": f"Om welke categorie gaat het?\
+                            \nReageer met de korte of lange naam.\n",
+                        "author": "",
+                        "items": {}
+                    }
 
+                    index = 0
+                    for item in listcategoryclasses:
+                        dict_["description"] += f"\n{index + 1} - {item.name} - {item.short_name}"
+                        index += 1
+
+                    embed = await logs.return_embed(dict_, color=0xffffff)
+                    message = await ctx.send(embed=embed)
+                    list = ['1️⃣', '2️⃣', '3️⃣', '❌']
+                    await cogs.functions.addReactions(message, list)
+                    done, pending = await asyncio.wait([
+                        self.bot.loop.create_task(self.bot.wait_for('message', timeout=120.0, check=checkMessage)),
+                        self.bot.loop.create_task(self.bot.wait_for('reaction_add', timeout=120.0, check=checkReaction))
+                    ], return_when=asyncio.FIRST_COMPLETED)
+                    
+                    try:
+                        stuff = done.pop().result()
+                        index = 0
+                        dbindex = None
+                        if isinstance(stuff, tuple):
+                            if str(stuff[0].emoji) == '1️⃣':
+                                index = 0
+
+                            elif str(stuff[0].emoji) == '2️⃣':
+                                index = 1
+
+                            elif str(stuff[0].emoji) == '3️⃣':
+                                index = 2
+
+                            elif str(stuff[0].emoji) == '❌':                                    
+                                break
+                            
+                            dbindex = listcategoryclasses[index].id
+                        elif isinstance(stuff, discord.Message):
+                            tmp = 0
+                            for item in listcategoryclasses:
+                                if stuff.content.lower() == item.short_name.lower() or stuff.content.lower() == item.name.lower():
+                                    dbindex = item.id
+                                    index = tmp
+
+                                tmp += 1
+                        
+                        dict_ = {
+                            "url": "",
+                            "title": "Kloppen deze gegevens?",
+                            "description": f"U koos voor:\
+                                \n\n__**{listcategoryclasses[index].name}**__\
+                                \n\nKlopt dit?",
+                            "author": "",
+                            "items": {}
+                        }
+                        result = await showConfirmationScreen(dict_)
+
+                        if result:
+                            validValue = True
+                            HuidigeCategory = listcategoryclasses[index]
+
+                    except TimeoutError:
+                        pass
                 
+                # Kenteken opvragen
+                if HuidigeSubCategory.short_name.lower() == "vv":
+                    validValue = False
+                    while not validValue:
+                        dict_ = {
+                            "url": "",
+                            "title": "Ik mis nog wat gegevens",
+                            "description": f"Wat is het kenteken?\
+                                \nReageer met de korte of lange naam.\n",
+                            "author": "",
+                            "items": {}
+                        }
 
-                for item in listcategoryclasses:
+                        embed = await logs.return_embed(dict_, color=0xffffff)
+                        await ctx.send(embed=embed)
+                        message = await self.bot.wait_for('message', timeout=120.0, check=checkMessage)
+                        licensePlate = message.content
 
+                        dict_ = {
+                            "url": "",
+                            "title": "Kloppen deze gegevens?",
+                            "description": f"Het opgegeven kenteken:\
+                                \n\n__**{licensePlate}**__\
+                                \n\nKlopt dit?",
+                            "author": "",
+                            "items": {}
+                        }
+                        result = await showConfirmationScreen(dict_)
+                    
+                        if result:
+                                validValue = True
 
-                embed = await logs.return_embed(dict_, color=0xffffff)
-                message = await ctx.send(embed=embed)
-                reaction = await self.bot.wait_for('message', timeout=120.0, check=checkMessage)
+                # Dynamisch nog op te halen
+                choices = {
+                    1: [1, 2, 3, 4, 5, 6, 18],
+                    2: [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]
+                }
+                choiceslist = choices[HuidigeSubCategory.id]
+                listinsurabletypes = []
+
+                for item in choiceslist:
+                    myresult = getInsurableTypes(item)
+                    listinsurabletypes.append(InsurableType(myresult[0][0], myresult[0][1], myresult[0][2], myresult[0][3]))
+
+                validValue = False
+                while not validValue:
+                    dict_ = {
+                        "url": "",
+                        "title": "Ik mis nog wat gegevens",
+                        "description": f"Om wat voor {HuidigeSubCategory.name.lower()} gaat het?\
+                            \nReageer met de korte of lange naam of het getalletje vooraan.\n",
+                        "author": "",
+                        "items": {}
+                    }
+
+                    index = 0
+                    for item in listinsurabletypes:
+                        dict_["description"] += f"\n{index + 1} - {item.name} - {item.short_name}"
+                        index += 1
+
+                    embed = await logs.return_embed(dict_, color=0xffffff)
+                    message = await ctx.send(embed=embed)
+                    list = ['❌']
+                    await cogs.functions.addReactions(message, list)
+                    done, pending = await asyncio.wait([
+                        self.bot.loop.create_task(self.bot.wait_for('message', timeout=120.0, check=checkMessage)),
+                        self.bot.loop.create_task(self.bot.wait_for('reaction_add', timeout=120.0, check=checkReaction))
+                    ], return_when=asyncio.FIRST_COMPLETED)
+                    
+                    try:
+                        stuff = done.pop().result()
+                        index = 0
+                        dbindex = None
+                        if isinstance(stuff, tuple):
+                            if str(stuff[0].emoji) == '❌':                                    
+                                break
+                            
+                        elif isinstance(stuff, discord.Message):
+                            tmp = 0
+                            for item in listinsurabletypes:
+                                print(cogs.functions.checkValue("isNumber", stuff.content))
+                                if cogs.functions.checkValue("isNumber", stuff.content) and int(stuff.content) == item.id:
+                                    dbindex = item.id
+                                    index = tmp
+
+                                elif stuff.content.lower() == item.short_name.lower() or stuff.content.lower() == item.name.lower():
+                                    dbindex = item.id
+                                    index = tmp
+
+                                tmp += 1
+
+                        dict_ = {
+                            "url": "",
+                            "title": "Kloppen deze gegevens?",
+                            "description": f"U koos voor:\
+                                \n\n__**{listinsurabletypes[index].name}**__\
+                                \n\nKlopt dit?",
+                            "author": "",
+                            "items": {}
+                        }
+                        result = await showConfirmationScreen(dict_)
+
+                        if result:
+                            validValue = True
+                            HuidigeInsurableType = listinsurabletypes[index]
+
+                    except TimeoutError:
+                        pass
 
                 timedelta = None
                 timespan = None
@@ -347,23 +511,23 @@ class Insurances(commands.Cog):
 
                     if timespan == "w" or timespan == "d" or timespan == "m":
                         if timespan == "w":
-                            timedelta = f"weeks={length}"
+                            timedelta = f"weeks"
 
                             if length == 1:
                                 timedeltauitleg = f"{length} week"
                             else:
                                 timedeltauitleg = f"{length} weken"
 
-                        if timespan == "d":
-                            timedelta = f"days={length}"
+                        elif timespan == "d":
+                            timedelta = f"days"
                             
                             if length == 1:
                                 timedeltauitleg = f"{length} dag"
                             else:
                                 timedeltauitleg = f"{length} dagen"
 
-                        if timespan == "m":
-                            timedelta = f"months={length}"
+                        elif timespan == "m":
+                            timedelta = f"months"
 
                             if length == 1:
                                 timedeltauitleg = f"{length} maand"
@@ -407,23 +571,23 @@ class Insurances(commands.Cog):
 
                         if timespan == "w" or timespan == "d" or timespan == "m" and cogs.functions.checkValue("isNumber", length):                            
                             if timespan == "w":
-                                timedelta = f"weeks={length}"
+                                timedelta = f"weeks"
 
                                 if length == 1:
                                     timedeltauitleg = f"{length} week"
                                 else:
                                     timedeltauitleg = f"{length} weken"
 
-                            if timespan == "d":
-                                timedelta = f"days={length}"
+                            elif timespan == "d":
+                                timedelta = f"days"
                                 
                                 if length == 1:
                                     timedeltauitleg = f"{length} dag"
                                 else:
                                     timedeltauitleg = f"{length} dagen"
 
-                            if timespan == "m":
-                                timedelta = f"months={length}"
+                            elif timespan == "m":
+                                timedelta = f"months"
 
                                 if length == 1:
                                     timedeltauitleg = f"{length} maand"
@@ -445,20 +609,95 @@ class Insurances(commands.Cog):
                     if result:
                         validValue = True
 
+                myresult = getInsuranceTypes(2, HuidigeCategory.id, HuidigeInsurableType.id)
+                HuidigeInsuranceType = InsuranceType(myresult[0][0], myresult[0][1], myresult[0][2], myresult[0][3], myresult[0][4], myresult[0][5])
+                timediff = None
                 
+                if timedelta == "days":
+                    timediff = datetime.timedelta(days=int(length))
+
+                elif timedelta == "weeks":
+                    timediff = datetime.timedelta(weeks=int(length))
+
+                elif timedelta == "months":
+                    timediff = datetime.timedelta(months=int(length))
+                
+                endDate = startDate + timediff
+
+                dict_ = {
+                    "url": "",
+                    "title": "Ter bevestiging",
+                    "description": f"Kloppen deze gegevens?\
+                        \n\
+                        \n__**Klant:**__\
+                        \n{discordTarget.mention}\
+                        \n\
+                        \n__**Verkoper:**__\
+                        \n{ctx.author.mention}\
+                        \n\
+                        \n__**Type verzekering:**__\
+                        \n{HuidigeSubCategory.name}\
+                        \n\
+                        \n__**Verzekering's categorie:**__\
+                        \n{HuidigeCategory.name}\
+                        \n",
+                    "author": "",
+                    "items": {}
+                }
+
+                if HuidigeSubCategory.short_name.lower() == "pv":
+                    dict_["description"] += f"\
+                        \n__**Beroep:**__"
+                        
+                elif HuidigeSubCategory.short_name.lower() == "vv":
+                    dict_["description"] += f"\
+                        \n__**Type voertuig:**__"
+
+                dict_["description"] += f"\
+                    \n{HuidigeInsurableType.name}\n"
+
+                if HuidigeSubCategory.short_name.lower() == "vv":
+                    dict_["description"] += f"\
+                        \n__**Kenteken:**__\
+                        \n{licensePlate}\
+                        \n"
+
+                dict_["description"] += f"\
+                    \n__**Te betalen:**__\
+                    \n{HuidigeInsuranceType.price}\
+                    \n\
+                    \n__**Bonusmalus:**__\
+                    \n{HuidigeInsuranceType.default_mp}\
+                    \n\
+                    \n__**Minimum bonusmalus:**__\
+                    \n{HuidigeInsuranceType.min_tmp}\
+                    \n\
+                    \n__**Startdatum:**__\
+                    \n{startDate.strftime('%d-%m-%y')}\
+                    \n\
+                    \n__**Einddatum:**__\
+                    \n{endDate.strftime('%d-%m-%y')}"
+
+                result = await showConfirmationScreen(dict_)
+
+                if result:
+                    NieuweVerzekering = Insurance(self.bot, agent.discordID, client.discordID, insured, insurance_typeID, multiplier, amount_paid, startDate, endDate)
+                else:
+                    # Werd geklikt op het kruisje of timeout, dan zeggen we gewoon dat ie opnieuw mag.
+                    pass
 
             # Als "edit", "bewerk", "pasaan", "aanpassen", "verander"
-            if commandtype == "edit" or commandtype == "bewerk" or commandtype == "pasaan" or commandtype == "aanpassen" or commandtype == "verander":
+            elif commandtype == "edit" or commandtype == "bewerk" or commandtype == "pasaan" or commandtype == "aanpassen" or commandtype == "verander":
                 # Check of args zijn ingevuld
                 pass
 
             # Als "zie", "bekijk", "see"
-            if commandtype == "zie" or commandtype == "bekijk" or commandtype == "see":
+            elif commandtype == "zie" or commandtype == "bekijk" or commandtype == "see":
                 # Check of args zijn ingevuld
                 pass
 
             # Als geen is meegegeven
-            if not commandtype:
+            elif not commandtype:
                 dict_ = {
                     "url": "",
                     "title": "De verzekering",
