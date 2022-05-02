@@ -69,10 +69,10 @@ async def on_ready():
     bot.pcarsrole = vkgGuild.get_role(952837653198430208)
     bot.vsgrole = vkgGuild.get_role(952857453723275264)
     bot.jjrole = vkgGuild.get_role(953562057066819585)
-    bot.insurancetypes = {}
-    bot.insurabletypes = {}
-    bot.categories = {}
-    bot.subcategories = {}
+    bot.insurancetypes = None
+    bot.insurabletypes = None
+    bot.categories = None
+    bot.subcategories = None
 
     bot.x = False
     if not bot.x:

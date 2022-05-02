@@ -222,7 +222,7 @@ class economy(commands.Cog):
                 kluis = kluis - int(hoeveelheid)
                 hoeveelheid = format(int(hoeveelheid), ',')
                 hoeveelheid = hoeveelheid.replace(',', '.')
-
+ 
                 dict_ = {
                     "url": "",
                     "title": "Hoeveelheid cash gewijzigd",
@@ -286,7 +286,6 @@ class economy(commands.Cog):
                 }                
                 embed = await logs.return_embed(dict_, 0x1E90FF)
                 await ctx.send(embed=embed, delete_after=20)
-
 
 async def setup(bot):
     await bot.add_cog(economy(bot))

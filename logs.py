@@ -92,7 +92,7 @@ async def make_discord_log(self, ctx, log_dict):
     channel = discord.utils.get(ctx.guild.channels, id=general.return_log_channel_id(log_dict['perms']))
     await channel.send(embed=embed)
 
-async def make_embed(self, ctx, dict_):
+async def make_embed(self, ctx, dict_, color=0xff0000):
     home = "http://vkg.groningenrp.xyz"
     
     if not dict_['url'] == None and not dict_['url'] == "":
@@ -110,7 +110,7 @@ async def make_embed(self, ctx, dict_):
     else:
         description = ""
 
-    embed=discord.Embed(title=f'{title}', description=f'{description}', url=url, color=0xff0000)
+    embed=discord.Embed(title=f'{title}', description=f'{description}', url=url, color=color)
 
     if dict_['items'].items():
         for k,v in dict_['items'].items():

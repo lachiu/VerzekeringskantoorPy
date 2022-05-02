@@ -226,7 +226,7 @@ class administration(commands.Cog):
                 "items": {}
             }
 
-            embed = await return_embed(dict_)        
+            embed = await return_embed(dict_, color=0xfc0303)
             await self.bot.ticketchannel.send(embed=embed, view=ChannelButton(self.bot))
 
     @commands.command()

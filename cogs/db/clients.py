@@ -15,7 +15,7 @@ from dotenv.main import load_dotenv
 from discord.ext import commands
 from general_bot import bot_speaks
 
-class Clients(commands.cog):
+class Clients(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
@@ -23,5 +23,5 @@ class Clients(commands.cog):
     async def klant(self, ctx, commandtype: str, *, args = None):
         pass
 
-    async def setup(bot):
-        await bot.add_cog(Clients(bot))
+async def setup(bot):
+    await bot.add_cog(Clients(bot))

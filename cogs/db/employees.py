@@ -15,7 +15,7 @@ from dotenv.main import load_dotenv
 from discord.ext import commands
 from general_bot import bot_speaks
 
-class Employees(commands.cog):
+class Employees(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
@@ -23,5 +23,5 @@ class Employees(commands.cog):
     async def werknemer(self, ctx, commandtype: str, *, args = None):
         pass
 
-    async def setup(bot):
-        await bot.add_cog(Employees(bot))
+async def setup(bot):
+    await bot.add_cog(Employees(bot))

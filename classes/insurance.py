@@ -1,11 +1,16 @@
-import client
-import employee
+import classes.client
+import classes.employee
 import random
 import datetime
 
+from classes.staticclasses import InsurableType
+
 class Insurance():
     def __init__(self, bot, agentID, clientID, insured, insurance_typeID, multiplier, amount_paid, startDate, endDate):
-        self.policy_nr = self.GeneratePolicyName(f"{bot.categories[bot.insurancetypes[insurance_typeID].categoryID]}{bot.insurabletypes[bot.insurancetypes[insurance_typeID].insurable_typeID]}")
+        self.policy_nr = None
+        if bot.categories and bot.insurabletypes:
+            self.policy_nr = self.GeneratePolicyName(f"{bot.categories.short_name}{bot.insurabletypes.short_name}")                    
+            
         self.agent = None
         self.agentID = agentID
         self.client = None
@@ -17,7 +22,7 @@ class Insurance():
         self.startDate = startDate
         self.endDate = endDate
 
-    def GeneratePolicyName(verzekeringsnaam = "XX"):
+    def GeneratePolicyName(self, verzekeringsnaam = "XX"):
         charlist = [
             0, 1, 2,
             3, 4, 5,
@@ -32,4 +37,4 @@ class Insurance():
             randomstring += f"{char}"
             iterable += 1
 
-        return randomstring 
+        self.policy_nr = randomstring
