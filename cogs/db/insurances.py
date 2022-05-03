@@ -682,9 +682,20 @@ class Insurances(commands.Cog):
 
                 if result:
                     NieuweVerzekering = Insurance(self.bot, agent.discordID, client.discordID, insured, insurance_typeID, multiplier, amount_paid, startDate, endDate)
+                    
                 else:
                     # Werd geklikt op het kruisje of timeout, dan zeggen we gewoon dat ie opnieuw mag.
-                    pass
+                    dict_ = {
+                        "url": "",
+                        "title": "Daar ging wat mis",
+                        "description": f"Probeer het zo even opnieuw.\
+                        \n\nOnze excuses voor het ongemak.",
+                        "author": "",
+                        "items": {}
+                    }
+
+                    embed = await logs.return_embed(dict_, color=0xffffff)
+                    message = await ctx.send(embed=embed)
 
             # Als "edit", "bewerk", "pasaan", "aanpassen", "verander"
             elif commandtype == "edit" or commandtype == "bewerk" or commandtype == "pasaan" or commandtype == "aanpassen" or commandtype == "verander":
