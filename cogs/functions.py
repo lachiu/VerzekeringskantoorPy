@@ -1,8 +1,7 @@
 from discord.ext import commands
 
 async def returnMember(ctx, input):
-    member = await commands.MemberConverter().convert(ctx, input)
-    return member
+    return await commands.MemberConverter().convert(ctx, input)
 
 async def addReactions(message, list):
     try:

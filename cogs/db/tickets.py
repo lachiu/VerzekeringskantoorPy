@@ -1,7 +1,10 @@
+from asyncio import sleep, wait
+import datetime
 import os
 import time
 import typing
 import discord
+from cogs.functions import returnMember
 import general
 import mysql.connector
 from logs import return_embed
@@ -11,6 +14,7 @@ from logs import make_discord_log
 from dotenv.main import load_dotenv
 from discord.ext import commands
 from general_bot import bot_speaks
+from classes.employee import Employee
 
 typebuttons = {
     "probleem": "❗",
@@ -25,7 +29,7 @@ class ChannelButton(discord.ui.View):
         self.value = None
         self.bot = bot
 
-    async def button_action(self, button: discord.ui.Button, interaction: discord.Interaction, tickettype):
+    async def button_action(self, interaction: discord.Interaction, button: discord.ui.Button):
         load_dotenv()
         mydb = mysql.connector.connect(
             host=os.getenv('DB_SERVERNAME'),
@@ -33,7 +37,8 @@ class ChannelButton(discord.ui.View):
             password=os.getenv('DB_PASSWORD'),
             database=os.getenv('DB_NAME')
         )
-
+        
+        tickettype = button.custom_id
         user = interaction.user
         mycursor = mydb.cursor(buffered=True)
         sql = "SELECT count(*) FROM `tbl_tickets` WHERE `agent_discordid` IS NULL AND `client_discordid` LIKE %s;"
@@ -138,21 +143,21 @@ class ChannelButton(discord.ui.View):
             except:
                 pass
 
-    @discord.ui.button(label="❗ Ik heb een probleem ❗", style=discord.ButtonStyle.danger, custom_id="channelbutton:probleem")
-    async def probleem(self, button: discord.ui.Button, interaction: discord.Interaction):
-        await self.button_action(button, interaction, "probleem")
+    @discord.ui.button(label="❗ Ik heb een probleem ❗", style=discord.ButtonStyle.danger, custom_id="probleem")
+    async def probleem(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await self.button_action(interaction, button)
     
-    @discord.ui.button(label="❓ Ik heb een vraag ❓", style=discord.ButtonStyle.danger, custom_id='channelbutton:vraag')
-    async def vraag(self, button: discord.ui.Button, interaction: discord.Interaction):
-        await self.button_action(button, interaction, "vraag")
+    @discord.ui.button(label="❓ Ik heb een vraag ❓", style=discord.ButtonStyle.danger, custom_id='vraag')
+    async def vraag(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await self.button_action(interaction, button)
 
-    @discord.ui.button(label="📋 Ik wil graag product x 📋", style=discord.ButtonStyle.danger, custom_id='channelbutton:aanvraag')
-    async def aanvraag(self, button: discord.ui.Button, interaction: discord.Interaction):
-        await self.button_action(button, interaction, "aanvraag")
+    @discord.ui.button(label="📋 Ik wil graag product x 📋", style=discord.ButtonStyle.danger, custom_id='aanvraag')
+    async def aanvraag(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await self.button_action(interaction, button)
 
-    @discord.ui.button(label="😱 Ik heb een ongeluk gehad 😱", style=discord.ButtonStyle.danger, custom_id='channelbutton:claim')
-    async def claim(self, button: discord.ui.Button, interaction: discord.Interaction):
-        await self.button_action(button, interaction, "claim")
+    @discord.ui.button(label="😱 Ik heb een ongeluk gehad 😱", style=discord.ButtonStyle.danger, custom_id='claim')
+    async def claim(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await self.button_action(interaction, button)
 
 class tickets(commands.Cog):
     def __init__(self, bot):
@@ -165,22 +170,6 @@ class tickets(commands.Cog):
             channel_icon = current_channel.name[:1]
             newname = f"{channel_icon}-{tmpname}"
             await current_channel.edit(name = newname)
-
-    @commands.command(aliases=['aanmaken', 'maakaan'])
-    async def create(self, ctx):
-        if general.check_perms('dev', ctx.author):
-            load_dotenv()
-            mydb = mysql.connector.connect(
-                host=os.getenv('DB_SERVERNAME'),
-                user=os.getenv('DB_USERNAME'),
-                password=os.getenv('DB_PASSWORD'),
-                database=os.getenv('DB_NAME')
-            )
-
-            sql = "SELECT COUNT(*) FROM `tbl_tickets` WHERE `client_discordid` LIKE %s;"
-            mycursor = mydb.cursor()
-            mycursor.execute(sql, (ctx.author.id,))
-            myresult = mycursor.fetchone()
 
     @commands.command(aliases=['lift'])
     async def elevate(self, ctx):
@@ -399,6 +388,18 @@ class tickets(commands.Cog):
                 database=os.getenv('DB_NAME')
             )
 
+            dict_ = {
+                "url": "",
+                "title": "Ticket afgehandeld",
+                "description": f"Bedankt voor uw bericht, deze ticket word zo gesloten.",
+                "author": "",
+                "items": {}
+            }
+
+            await make_embed(self, ctx, dict_)
+            #await sleep(10)
+
+            categoryName = ctx.channel.category.name
             done_category = discord.utils.get(ctx.guild.categories, id=918437901031849984)
             
             dict_ = {
@@ -415,16 +416,27 @@ class tickets(commands.Cog):
             
             for role in allroles:
                 try:
-                    await ctx.channel.set_permissions(role, send_messages=False)
+                    if not role == self.bot.jmrole and not role == self.bot.superrole:
+                        await ctx.channel.set_permissions(role, read_messages=False, send_messages=False)
                 except:
                     pass
-
+            
+            try:
+                await ctx.channel.set_permissions(self.bot.jmrole, read_messages=True, send_messages=True)
+            except:
+                pass
+            
+            try:
+                await ctx.channel.set_permissions(self.bot.superrole, read_messages=True, send_messages=True)
+            except:
+                pass
+            
             bot_speaks(self.bot, f'{ctx.author.name} heeft {ctx.channel.name} gemoved naar afgehandeld.')
-            sql = "SELECT `client_discordid` FROM `tbl_tickets` WHERE `channelid` LIKE %s;"
+            sql = "SELECT `client_discordid`, `agent_discordid` FROM `tbl_tickets` WHERE `channelid` LIKE %s;"
             mycursor = mydb.cursor(buffered=True)
-            mycursor.execute(sql, (ctx.channel.id,))            
+            mycursor.execute(sql, (ctx.channel.id,))        
             myresult = mycursor.fetchone()
-            client = discord.utils.get(ctx.guild.members, id=int(myresult[0]))
+            client = await returnMember(ctx, myresult[0])
 
             log_dict = {
                 "mod": ctx.author.id,
@@ -444,6 +456,66 @@ class tickets(commands.Cog):
 
             make_log(log_dict)
             await make_discord_log(self, ctx, log_dict)
+
+            werknemer = None            
+            categoryLevel = int(categoryName[len(categoryName) - 1:])
+            await ctx.send(categoryLevel)
+
+            if len(myresult) >= 2 and myresult[1] != None:
+                def getEmployee(discordID):
+                    # Werknemer gegevens ophalen
+                    sql = "SELECT * FROM `tbl_agents` WHERE `discordID` LIKE %s;"            
+                    mycursor.execute(sql, (int(discordID),))
+                    myresult = mycursor.fetchone()
+
+                    return Employee(
+                        id=myresult[0],
+                        fivemID=myresult[1],
+                        discordID=myresult[2],
+                        bsn=myresult[3],
+                        fname=myresult[4],
+                        lname=myresult[5],
+                        pwd=myresult[6],
+                        dob=myresult[7],
+                        enabled=myresult[8]
+                    )
+
+                werknemer = getEmployee(int(myresult[1]))                
+                amount = 500 * categoryLevel
+                
+                sql = """INSERT INTO `tbl_sales`(
+                    `id`,
+                    `agentID`,
+                    `amount`,
+                    `reason`,
+                    `timestamp`
+                ) VALUES (NULL, %s, %s, %s, %s);"""
+
+                mycursor.execute(sql, (
+                    werknemer.id,
+                    amount,
+                    f"Ticket lvl-{categoryLevel} afgehandelt.",
+                    datetime.datetime.today().timestamp()
+                ))
+
+                mydb.commit()
+
+            dict_ = {
+                "url": "",
+                "title": f"Ticket lvl-{categoryLevel} werd afgehandeld",
+                "description": f"{ctx.author.mention} heeft de ticket gesloten.",
+                "author": "",
+                "items": {}
+            }
+            
+            if len(myresult) >= 2 and myresult[1] != None:
+                werknemerMember = await returnMember(ctx, werknemer.discordID)
+                dict_["description"] += f" Deze was geclaimd door {werknemerMember.mention}, hiervoor wordt €500,00 uitgekeerd."
+            else:
+                dict_["description"] += " Deze was niet geclaimd."
+
+            embed = await return_embed(dict_)
+            await self.bot.administrativelog.send(embed=embed)
         else:
             await ctx.send(f'{ctx.author.mention}, jammer genoeg heeft u niet genoeg permissies.', delete_after=10)
 
@@ -526,7 +598,8 @@ class tickets(commands.Cog):
                     await permission_msg.add_reaction('👎')
                     reaction = await self.bot.wait_for('reaction_add', timeout=120.0, check=checkreaction)
 
-                    if str(reaction[0].emoji) == '👍':                        
+                    if str(reaction[0].emoji) == '👍':
+                        reaction_message = None
                         goedGenoeg = False
                         while not goedGenoeg:
                             dict_ = {
@@ -539,7 +612,19 @@ class tickets(commands.Cog):
                             
                             await make_embed(self, ctx, dict_)                            
                             reaction_message = await self.bot.wait_for('message', timeout=120.0, check=checkmessage)
-                            message = await ctx.send(f"{target.mention}, wilt u hier nog iets aan wijzigen?")
+                            
+                            dict_ = {
+                                "url": "",
+                                "title": "Bevestiging",
+                                "description": f"{target.mention}, wilt u hier nog iets aan wijzigen?\
+                                    \n\n__**Uw huidig antwoord:**__\
+                                    \n{reaction_message}",
+                                "author": "",
+                                "items": {}
+                            }
+                            
+                            embed = await return_embed(dict_)                                                   
+                            message = await ctx.send(embed=embed)
                             await message.add_reaction('👍')
                             await message.add_reaction('👎')
                             reaction = await self.bot.wait_for('reaction_add', timeout=120.0, check=checkreaction)
@@ -580,17 +665,12 @@ class tickets(commands.Cog):
                                 aantal_sterren = 2
                             if str(reaction[0].emoji) == '1️⃣':
                                 aantal_sterren = 1
-
-                        sql = "SELECT `agent_discordid`, `client_discordid` FROM `tbl_tickets` WHERE `channelid` LIKE %s;"
-                        mycursor.execute(sql, (ctx.channel.id,))
-                        myresult = mycursor.fetchone()
-                        agentdiscordid = int(myresult[0])
-                        clientdiscordid = int(myresult[1])
+                        
                         huidige_tijd = int(time.time())
 
                         sql = "SELECT `id` FROM `tbl_agents` WHERE `discordID` LIKE %s;"
                         try:
-                            mycursor.execute(sql, (agentdiscordid,))
+                            mycursor.execute(sql, (ticketagentid,))
                             myresult = mycursor.fetchone()
                         except:
                             dict_ = {
@@ -613,7 +693,7 @@ class tickets(commands.Cog):
                         sql = "SELECT `id` FROM `tbl_clients` WHERE `discordID` LIKE %s;"                        
                         clientid = None
                         try:
-                            mycursor.execute(sql, (clientdiscordid,))
+                            mycursor.execute(sql, (ticketclientid,))
                             myresult = mycursor.fetchone()
                             clientid = int(myresult[0])
                         except:

@@ -52,14 +52,17 @@ class economy(commands.Cog):
                 if action == "toevoegen":
                     dict_["description"] = dict_["description"] + " Hoeveel wilt u er toevoegen?"
             
-            await logs.make_embed(self, ctx, dict_)
+            embed = await logs.return_embed(dict_)
+            await ctx.send(embed=embed, delete_after=60)
 
         async def verkrijg(self, ctx, soort, action=None):
             await vraag(self, ctx, soort, action)
             message = await self.bot.wait_for('message', timeout=120.0, check=checkmessage)
+            await message.delete()
             return message.content
 
-        if general.check_perms('administrative', ctx.author):
+        await ctx.message.delete()
+        if general.check_perms('administrative', ctx.author):            
             repairkits = general.open_yaml("repairkits")
 
             if commandtype == "take" or commandtype == "neem":
@@ -160,6 +163,32 @@ class economy(commands.Cog):
         hoeveelheid = None
         reden = None
 
+        load_dotenv()
+                    
+        mydb = mysql.connector.connect(
+            host=os.getenv('DB_SERVERNAME'),
+            user=os.getenv('DB_USERNAME'),
+            password=os.getenv('DB_PASSWORD'),
+            database=os.getenv('DB_NAME')
+        )
+
+        mycursor = mydb.cursor()
+
+        def transactie_log(hoeveelheid, reden):
+            sql = "INSERT INTO `tbl_transactions` (`id`, `agentID`, `text`, `amount`, `timestamp`) VALUES (NULL, %s, %s, %s, %s);"
+            agent = getEmployee(ctx.author.id)
+            agentID = agent[0][0]
+            mycursor.execute(sql, (agentID, reden, hoeveelheid, int(time.time())))
+            mydb.commit()
+
+        def getEmployee(discordID):
+            # Werknemer gegevens ophalen
+            sql = "SELECT * FROM `tbl_agents` WHERE `discordID` LIKE '%s';"
+            mycursor.execute(sql, (int(discordID),))
+            return mycursor.fetchall()
+
+            
+
         def checkreaction(reaction, user):
             return user == ctx.author and reaction.message.channel == ctx.channel
 
@@ -193,13 +222,16 @@ class economy(commands.Cog):
                 if action == "toevoegen":
                     dict_["description"] = dict_["description"] + " Hoeveel cash geld wilt u toevoegen?"
             
-            await logs.make_embed(self, ctx, dict_)
+            embed = await logs.return_embed(dict_)
+            await ctx.send(embed=embed, delete_after=60)
 
         async def verkrijg(self, ctx, soort, action=None):
             await vraag(self, ctx, soort, action)
             message = await self.bot.wait_for('message', timeout=120.0, check=checkmessage)
+            await message.delete()
             return message.content
 
+        await ctx.message.delete()
         if general.check_perms('administrative', ctx.author):
             kluis = general.open_yaml("kluis")
 
@@ -219,20 +251,21 @@ class economy(commands.Cog):
                 except:
                     reden = await verkrijg(self, ctx, "reden")
                 
+                transactie_log(0 - int(hoeveelheid), reden)
                 kluis = kluis - int(hoeveelheid)
                 hoeveelheid = format(int(hoeveelheid), ',')
-                hoeveelheid = hoeveelheid.replace(',', '.')
+                kluistmp = format(int(kluis), ',')
  
                 dict_ = {
                     "url": "",
                     "title": "Hoeveelheid cash gewijzigd",
-                    "description": f"{self.bot.boss.mention}, er werd €{hoeveelheid},00 \
+                    "description": f"{self.bot.boss.mention}, er werd €{hoeveelheid.replace(',', '.')},00 \
                         uit de kluis gehaald door {ctx.author.mention} met als reden: {reden}.\
-                        Er ligt nu €{hoeveelheid},00 in de kluis.",
+                        Er ligt nu €{kluistmp.replace(',', '.')},00 in de kluis.",
                     "author": "",
                     "items": {}
                 }
-
+                
                 embed = await logs.return_embed(dict_, 0xFF0000)
                 channel = self.bot.get_channel(general.return_log_channel_id("kluis"))
                 await channel.send(embed=embed)
@@ -253,20 +286,21 @@ class economy(commands.Cog):
                 except:
                     reden = await verkrijg(self, ctx, "reden")
                 
+                transactie_log(int(hoeveelheid), reden)
                 kluis = kluis + int(hoeveelheid)
                 hoeveelheid = format(int(hoeveelheid), ',')
-                hoeveelheid = hoeveelheid.replace(',', '.')
+                kluistmp = format(int(kluis), ',')
 
                 dict_ = {
                     "url": "",
                     "title": "Hoeveelheid cash gewijzigd",
-                    "description": f"{self.bot.boss.mention}, er werd €{hoeveelheid},00 \
+                    "description": f"{self.bot.boss.mention}, er werd €{hoeveelheid.replace(',', '.')},00 \
                         in de kluis gelegd door {ctx.author.mention} met als reden: {reden}.\
-                        Er ligt nu €{hoeveelheid},00 in de kluis.",
+                        Er ligt nu €{kluistmp.replace(',', '.')},00 in de kluis.",
                     "author": "",
                     "items": {}
                 }
-
+                
                 embed = await logs.return_embed(dict_, 0x008000)
                 channel = self.bot.get_channel(general.return_log_channel_id("kluis"))
                 await channel.send(embed=embed)

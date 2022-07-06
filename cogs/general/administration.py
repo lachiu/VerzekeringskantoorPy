@@ -13,6 +13,7 @@ from logs import make_discord_log
 from dotenv.main import load_dotenv
 from discord.ext import commands
 from general_bot import bot_speaks
+import pdf_generation
 
 class administration(commands.Cog):
     def __init__(self, bot):
@@ -51,12 +52,12 @@ class administration(commands.Cog):
                 vkgGuild = self.bot.get_guild(875098573262438420)
                 role = vkgGuild.get_role(general.return_role_id("klant"))
                 await payload.member.add_roles(role)
-
-            await message.clear_reactions()
-            await message.add_reaction('👌')
+                await message.clear_reactions()
+                await message.add_reaction('👌')
 
     @commands.command()
     async def setuprules(self, ctx):
+        await ctx.message.delete()
         if general.check_perms('dev', ctx.author):
             vkgGuild = self.bot.get_guild(875098573262438420)
             await self.bot.ruleschannel.purge(limit=10, bulk=False)
@@ -131,7 +132,7 @@ class administration(commands.Cog):
                 "url": "",
                 "title": "Regel 3",
                 "description": f"Taalgebruik verder dient te gebeuren met al het mogelijke respect voor anderen.\
-                    \nMet ziektes schelden, het n-woord of andere racistische of seksistische uitspraken \
+                    \nMet ziektes schelden, het n-woord of andere discriminerende uitspraken \
                     zijn hier ook niet welkom.",
                 "author": "",
                 "items": {}
@@ -177,8 +178,7 @@ class administration(commands.Cog):
                     \nWe doen ons uiterste best om daar een compromis als oplossing in te bekomen, \
                     indien mogelijk.\
                     \nOnze excuses mocht dat bij u plaats vinden/hebben gevonden.\
-                    \nWij streven naar professionaliteit en voortbrengen van een nieuwe RP in Grp.\
-                    \nRoddels of onwaarheden verspreiden ",
+                    \nWij streven naar professionaliteit en voortbrengen van een nieuwe RP in Grp.",
                 "author": "",
                 "items": {}
             }
@@ -217,6 +217,7 @@ class administration(commands.Cog):
 
     @commands.command()
     async def setupbutton(self, ctx):
+        await ctx.message.delete()
         if general.check_perms('dev', ctx.author):
             dict_ = {
                 "url": "",
@@ -231,6 +232,7 @@ class administration(commands.Cog):
 
     @commands.command()
     async def setupschoolmessages(self, ctx):
+        await ctx.message.delete()
         if general.check_perms('dev', ctx.author):
             # Eerst de kanalen purgen.
             await self.bot.schooldocs.purge(limit=10, bulk=False)
@@ -589,7 +591,7 @@ class administration(commands.Cog):
                     \n**Dezelfde gegevens van het andere voertuig en de chauffeur zoals de klant**, *(indien geen eenzijdig ongeval)*\
                     \n\
                     \nNu is het aan jou om te gaan kijken of er een E-MW (externe medewerker) aangifte heeft gedaan van de reparatie.\
-                    \nIndien er na een week na het ongeluk nog geen aangifte is gebeurd kom het schadegeval te vervallen.\
+                    \nIndien er na een week van het ongeluk nog geen aangifte is gebeurd komk het schadegeval te vervallen.\
                     \nIs er wel een aangifte gebeurd? Dan ga je kijken wie er in fout is. Jij geeft gewoon aan in je ticket wie er in fout is als volgt:\
                     \n\
                     \n```Beste\
@@ -630,20 +632,18 @@ class administration(commands.Cog):
                     \n\
                     \n__**{self.bot.politierole.mention}, {self.bot.vsgrole.mention}:**__\
                     \nWij verwachten van jou dat je een analyse maakt van een gegeven situatie.\
-                    \nHier dien je objectief naar te kijken en een verdict te vellen, nl. wie er schuldig is.\
-                    \nJij bepaalt dus wie er in fout is. Verklaar ook in je verslag waarom dat zo is.\
+                    Hier dien je objectief naar te kijken en een verdict te vellen, nl. wie er schuldig is.\
+                    Jij bepaalt dus wie er in fout is. Verklaar ook in je verslag waarom dat zo is.\
                     \n\
                     \n__**BA:**__\
                     \nHet andere voertuig vergoeden wij, inclusief RWS en takelwagen.\
-                    \nHet niet verzekerde voertuig krijgt een factuur.\
+                    \\Het niet verzekerde voertuig krijgt een factuur.\
                     \n\
                     \n__**Omnium:**__\
                     \nHet verzekerde voertuig vergoeden wij, exclusief RWS en takelwagen.\
-                    \nHet andere voertuig krijgt een factuur.\
                     \n\
                     \n__**Full Omnium:**__\
                     \nHet verzekerde voertuig vergoeden wij, inclusief RWS en takelwagen.\
-                    \nHet andere voertuig krijgt een factuur.\
                     \n\
                     \n__**Handelsverzekering:**__\
                     \nHet verzekerde voertuig vergoeden wij, inclusief RWS en takelwagen.\
@@ -651,17 +651,20 @@ class administration(commands.Cog):
                     \n\
                     \n__**Zorgverzekering:**__\
                     \nDe verzekerde zijn medische kosten worden vergoed.\
-                    \nKosten van niet-verzekerden kunnen verhaald worden bij een aanrijding \
-                    \nals de politie de BA verzekerde schuldig achten.\
+                    \nKosten van niet-verzekerden kunnen verhaald worden \
+                    als de politie de BA verzekerde schuldig achten.\
                     \n\
                     \n__**De aangifte:**__\
-                    \nJe komt aan bij je melding en je stelt vast dat de andere partij verzekerd is.\
+                    \nJe komt aan bij je melding en heeft een verzekering.\
+                    \n\nOptie 1:\
                     \nJe maakt een ticket aan, daarin meld je het volgende:\
                     \n**Wie jij bent**, *(naam, roepnummer, job)*,\
-                    \n**Om welk voertuig en/of persoon het gaat**, *(nummerplaat, naam)*,\
-                    \n**De andere partij**, *(nummerplaat, naam)*,\
+                    \n**Om welk voertuig en/of persoon het gaat**, *(nummerplaat, naam, bsn)*,\
+                    \n**De andere partij**, *(nummerplaat, naam, bsn)*,\
                     \n**Beschrijving**, *(jouw vaststelling(en))*\
                     \n**Locatie**, *(met foto, gps bij ongeluk)*\
+                    \n\nOptie 2:\
+                    \n<https://forms.gle/bXS5hjMqBEGmRtDg6>\
                     \n\
                     \nDe verloningen:\
                     \n**Per correcte aangifte: €250,00**\
@@ -689,6 +692,7 @@ class administration(commands.Cog):
 
     @commands.command()
     async def roletemplate(self, ctx):
+        await ctx.message.delete()
         if general.check_perms('dev', ctx.author):
             dict_ = {
                 "url": "",
@@ -710,6 +714,7 @@ class administration(commands.Cog):
             
     @commands.command(aliases=['waarschuw'])
     async def warn(self, ctx, member: discord.Member, *, reason="geen reden opgegeven"):
+        await ctx.message.delete()
         if general.check_perms('administrative', ctx.author):
             dict_ = {
                 "url": "",
@@ -719,7 +724,8 @@ class administration(commands.Cog):
                 "items": {}
             }
             
-            await make_embed(self, ctx, dict_)
+            embed = await return_embed(dict_)
+            await ctx.send(embed=embed, delete_after=20)
 
             log_dict = {
                 "mod": ctx.author.id,
@@ -734,7 +740,6 @@ class administration(commands.Cog):
 
             try:
                 channel = await member.create_dm()
-                embed = await return_embed(dict_)
                 await channel.send(embed=embed)
             except:
                 pass
@@ -745,6 +750,7 @@ class administration(commands.Cog):
 
     @commands.command(aliases=['stamp'])
     async def kick(self, ctx, member: discord.Member, *, reason="geen reden opgegeven"):
+        await ctx.message.delete()
         if general.check_perms('administrative', ctx.author):
             dict_ = {
                 "url": "",
@@ -754,7 +760,8 @@ class administration(commands.Cog):
                 "items": {}
             }
 
-            await make_embed(self, ctx, dict_)
+            embed = await return_embed(dict_)
+            await ctx.send(embed=embed, delete_after=20)
 
             log_dict = {
                 "mod": ctx.author.id,
@@ -769,7 +776,6 @@ class administration(commands.Cog):
             
             try:
                 channel = await member.create_dm()
-                embed = await return_embed(dict_)
                 await channel.send(embed=embed)
             except:
                 pass
@@ -781,6 +787,7 @@ class administration(commands.Cog):
 
     @commands.command(aliases=['banhamer'])
     async def ban(self, ctx, member: discord.Member, *, reason="geen reden opgegeven"):
+        await ctx.message.delete()
         if general.check_perms('administrative', ctx.author) and not general.check_perms('administrative', member):
             dict_ = {
                 "url": "",
@@ -790,7 +797,8 @@ class administration(commands.Cog):
                 "items": {}
             }
             
-            await make_embed(self, ctx, dict_)
+            embed = await return_embed(dict_)
+            await ctx.send(embed=embed, delete_after=20)
 
             log_dict = {
                 "mod": ctx.author.id,
@@ -805,7 +813,6 @@ class administration(commands.Cog):
 
             try:
                 channel = await member.create_dm()
-                embed = await return_embed(dict_)
                 await channel.send(embed=embed)
             except:
                 pass
@@ -817,6 +824,7 @@ class administration(commands.Cog):
 
     @commands.command()
     async def unban(self, ctx, member, *, reason="geen reden opgegeven"):
+        await ctx.message.delete()
         if general.check_perms('administrative', ctx.author):
             banned_users = await ctx.guild.bans()
             member_name, member_discriminator = member.split('#')
@@ -832,8 +840,8 @@ class administration(commands.Cog):
                         "author": "",
                         "items": {}
                     }
-                    
-                    await make_embed(self, ctx, dict_)
+                    embed = return_embed(dict_)
+                    await ctx.send(embed=embed, delete_after=20)
                     
                     log_dict = {
                         "mod": ctx.author.id,
@@ -848,7 +856,6 @@ class administration(commands.Cog):
 
                     try:
                         channel = await member.create_dm()
-                        embed = await return_embed(dict_)
                         await channel.send(embed=embed)
                     except:
                         pass
@@ -860,23 +867,32 @@ class administration(commands.Cog):
             await ctx.send(f'{ctx.author.mention}, jammer genoeg heeft u niet genoeg permissies.', delete_after=10)
 
     @commands.command()
+    async def toonlocatie(self, ctx):
+        await ctx.message.delete()
+        if general.check_perms('basic', ctx.author):
+            await ctx.send("Ons hoofdkantoor is momenteel hier gevestigd:")
+            await ctx.send("http://vkg.groningenrp.xyz/images/vkg_dekaart.png")
+            await ctx.send("Het zwart omkaderd gedeelte is Sandy Super's garage.")           
+
+    @commands.command()
     async def purge(self, ctx, qty: int):
+        await ctx.message.delete()
         if general.check_perms('administrative', ctx.author):
-            await ctx.channel.purge(limit=(qty+1))
+            await ctx.channel.purge(limit=(qty))
 
     @commands.command(aliases=['dc'])
     async def disconnect(self, ctx):
+        await ctx.message.delete()
         if general.check_perms('dev', ctx.author):
             bot_speaks(self.bot, 'Ik sluit af.')
             await ctx.self.close()
             os.kill(os.getppid(), signal.SIGHUP)
 
     @commands.command(aliases=['reload'])
-    async def reload_specific_cog_command(self, ctx, arg: str):        
+    async def reload_specific_cog_command(self, ctx, arg: str):
+        await ctx.message.delete()     
         if general.check_perms('dev', ctx.author):
-            await ctx.send(f'{ctx.author.mention}, ik ga proberen om {arg} te reloaden.', delete_after=10)
             cog = None
-
             if self.bot.coglist[arg]:
                 cog = self.bot.coglist[arg]
                 await self.bot.reload_extension(cog)
@@ -890,6 +906,7 @@ class administration(commands.Cog):
         member = None
         role = None
         run = True
+        await ctx.message.delete()
         if general.check_perms('administrative', ctx.author):
             if isinstance(param_one, discord.Member):
                 member = param_one
@@ -898,7 +915,7 @@ class administration(commands.Cog):
             elif isinstance(param_one, str):
                 role = discord.utils.get(ctx.guild.roles, id=general.return_role_id(param_one))
             else:
-                await ctx.send(f'{ctx.author.mention}, parameter :one: werd niet gevonden.')
+                await ctx.send(f'{ctx.author.mention}, parameter :one: werd niet gevonden.', delete_after=10)
                 run = False
                 
             if isinstance(param_two, discord.Member):
@@ -908,13 +925,13 @@ class administration(commands.Cog):
             elif isinstance(param_two, str):
                 role = general.return_role_id(param_two)
             else:
-                await ctx.send(f'{ctx.author.mention}, parameter :two: werd niet gevonden.')
+                await ctx.send(f'{ctx.author.mention}, parameter :two: werd niet gevonden.', delete_after=10)
                 run = False
 
             if run:
                 bot_speaks(self.bot, f'{ctx.author} heeft voldoende permissies en geeft {member} de {role} rol.')
                 await member.add_roles(role)
-                await ctx.send(f'{ctx.author.mention}, het is gelukt. {member.mention} heeft nu de {role} rol.')
+                await ctx.send(f'{ctx.author.mention}, het is gelukt. {member.mention} heeft nu de {role} rol.', delete_after=30)
         else:
             await ctx.send(f'{ctx.author.mention}, u heeft niet voldoende permissies hiervoor.', delete_after=10)
         
@@ -923,6 +940,7 @@ class administration(commands.Cog):
         member = None
         role = None
         run = True
+        await ctx.message.delete()
         if general.check_perms('administrative', ctx.author):
             if isinstance(param_one, discord.Member):
                 member = param_one
@@ -947,7 +965,7 @@ class administration(commands.Cog):
             if run:
                 bot_speaks(self.bot, f'{ctx.author} heeft voldoende permissies en neemt van {member} de {role} rol af.')
                 await member.remove_roles(role)
-                await ctx.send(f'{ctx.author.mention}, het is gelukt. {member.mention} heeft nu geen {role} rol meer.')
+                await ctx.send(f'{ctx.author.mention}, het is gelukt. {member.mention} heeft nu geen {role} rol meer.', delete_after=30)
         else:
             await ctx.send(f'{ctx.author.mention}, u heeft niet voldoende permissies hiervoor.', delete_after=10)
         
