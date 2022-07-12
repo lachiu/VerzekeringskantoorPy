@@ -870,9 +870,8 @@ class administration(commands.Cog):
     async def toonlocatie(self, ctx):
         await ctx.message.delete()
         if general.check_perms('basic', ctx.author):
-            await ctx.send("Ons hoofdkantoor is momenteel hier gevestigd:")
+            await ctx.send("Ons hoofdkantoor is gevestigd op postcode 4024.\nHet zwart omkaderd gedeelte is Sandy Super's garage.\nHieronder ziet u de kaart:")
             await ctx.send("http://vkg.groningenrp.xyz/images/vkg_dekaart.png")
-            await ctx.send("Het zwart omkaderd gedeelte is Sandy Super's garage.")           
 
     @commands.command()
     async def purge(self, ctx, qty: int):
